@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+:root {
+  --paper: #FAFAFA;
+  --paper-dim: #F4F4F5;
+  --ink: #09090B;
+  --ink-soft: #3F3F46;
+  --surface: #FFFFFF;
+  --surface-line: #E4E4E7;
+  --pine: #10B981;
+  --pine-deep: #059669;
+  --pine-bright: #34D399;
+  --sage: #71717A;
+  --clay: #6366F1;
+  --clay-soft: #A5B4FC;
+
+  --background: var(--paper);
+  --foreground: var(--ink);
+}
+
+.dark {
+  --paper: #030712;
+  --paper-dim: #0B1120;
+  --ink: #F8FAFC;
+  --ink-soft: #94A3B8;
+  --surface: rgba(15, 23, 42, 0.4);
+  --surface-line: rgba(51, 65, 85, 0.5);
+  --pine: #10B981;
+  --pine-deep: #047857;
+  --pine-bright: #34D399;
+  --sage: #64748B;
+  --clay: #818CF8;
+  --clay-soft: #312E81;
+
+  --background: var(--paper);
+  --foreground: var(--ink);
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-dim: var(--paper-dim);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-surface: var(--surface);
+  --color-surface-line: var(--surface-line);
+  --color-pine: var(--pine);
+  --color-pine-deep: var(--pine-deep);
+  --color-pine-bright: var(--pine-bright);
+  --color-sage: var(--sage);
+  --color-clay: var(--clay);
+  --color-clay-soft: var(--clay-soft);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --font-display: var(--font-display), sans-serif;
+  --font-sans: var(--font-sans), sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+* {
+  border-color: var(--surface-line);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+::selection {
+  background: var(--pine);
+  color: var(--paper);
+}
+
+:focus-visible {
+  outline: 2px solid var(--pine);
+  outline-offset: 2px;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 0.55; }
+  50% { transform: scale(1.08); opacity: 0.85; }
+}
+.animate-breathe {
+  animation: breathe 4.5s ease-in-out infinite;
+}
+
+@keyframes drift {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  100% { transform: translate(0, 0) rotate(360deg); }
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-rise {
+  animation: rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.animate-shimmer {
+  background-size: 200% auto;
+  animation: shimmer 4s linear infinite;
+}
+
+/* Smooth textarea height transition */
+textarea {
+  transition: height 0.15s ease;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--surface-line); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--sage); }
