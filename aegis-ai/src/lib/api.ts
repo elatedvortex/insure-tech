@@ -7,7 +7,7 @@
  * • Exports typed helpers for every backend domain
  */
 
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const BASE = process.env.NEXT_PUBLIC_API_URL;
 
 // ── Token storage ──────────────────────────────────────────────────────────
 
@@ -17,13 +17,13 @@ const KEYS = {
 };
 
 /**
- * Mirror the access token into a cookie so Next.js middleware can read it
+ * Mirror the access token into a cookie so Next.js proxy/middleware can read it
  * server-side for route protection (localStorage is not available in middleware).
  */
 function syncCookie(access: string | null) {
   if (typeof document === "undefined") return;
   if (access) {
-    // SameSite=Lax is safe for same-origin; omit Secure so it works on http://localhost
+    // SameSite=Lax is safe for same-origin; Secure should be added in true production
     document.cookie = `${KEYS.access}=${access}; path=/; SameSite=Lax; max-age=86400`;
   } else {
     document.cookie = `${KEYS.access}=; path=/; SameSite=Lax; max-age=0`;
