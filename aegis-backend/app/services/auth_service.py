@@ -84,7 +84,7 @@ async def send_otp(email: str, db: AsyncSession) -> dict:
     await _audit(db, "otp.requested", meta={"email": email})
     await db.commit()
 
-    # Write OTP to a local file for automated test/login runs
+    # Write OTP to a local file for automated test/login runs (fallback)
     try:
         import os
         workspace_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -93,7 +93,39 @@ async def send_otp(email: str, db: AsyncSession) -> dict:
     except Exception:
         pass
 
-    # TODO: integrate real email sending (SendGrid / SES / Resend) here.
+    # Send the real email using Resend if configured
+    if settings.RESEND_API_KEY:
+        try:
+            import resend
+            resend.api_key = settings.RESEND_API_KEY
+            
+            html_content = f"""
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <h2 style="color: #111827;">Your Aegis Login Code</h2>
+                <p style="color: #4B5563; font-size: 16px;">
+                    Here is your temporary login code. It will expire in {settings.OTP_EXPIRE_MINUTES} minutes.
+                </p>
+                <div style="background-color: #F3F4F6; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;">
+                    <span style="font-size: 32px; font-weight: bold; letter-spacing: 4px; color: #111827;">{code}</span>
+                </div>
+                <p style="color: #9CA3AF; font-size: 14px;">
+                    If you didn't request this code, you can safely ignore this email.
+                </p>
+            </div>
+            """
+            
+            # Note: On the free tier, you can only send emails from onboarding@resend.dev
+            # to the email address you verified on Resend.
+            resend.Emails.send({
+                "from": "Aegis Security <onboarding@resend.dev>",
+                "to": email,
+                "subject": f"{code} is your Aegis verification code",
+                "html": html_content
+            })
+        except Exception as e:
+            import logging
+            logging.error(f"Failed to send Resend email: {e}")
+
     # For dev we return the code so the frontend can display it.
     dev_hint = code if settings.ENVIRONMENT == "development" else None
     return {"message": "OTP sent", "dev_code": dev_hint}
