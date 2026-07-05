@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     CORS_ORIGINS: list[str] = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "https://insure-tech-gas1.vercel.app"
     ]
 
     ENVIRONMENT: str = "development"
