@@ -12,7 +12,11 @@ export function ScorePanel({
   overall,
   breakdown,
   loading,
-}: ProtectionScore & { loading?: boolean }) {
+}: {
+  overall: number;
+  breakdown: ProtectionScore["breakdown"];
+  loading?: boolean;
+}) {
   const radius = 46;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (overall / 100) * circumference;

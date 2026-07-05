@@ -7,7 +7,7 @@ const AUTH_ONLY = ["/login"];
 
 const ACCESS_KEY = "aegis_access_token";
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Next.js API routes and static assets — always pass through
