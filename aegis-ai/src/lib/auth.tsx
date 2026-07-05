@@ -53,10 +53,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Immediately sync the localStorage token into a cookie so Next.js middleware
+  // can protect routes server-side — this must run before fetchUser resolves.
+  useEffect(() => {
+    const access = tokens.getAccess();
+    if (access) {
+      // Re-calling tokens.set with the same values triggers the cookie sync
+      const refresh = tokens.getRefresh() ?? "";
+      tokens.set(access, refresh);
+    }
+  }, []);
+
   // On mount: try to rehydrate user from stored access token
   useEffect(() => {
     fetchUser();
   }, [fetchUser]);
+
 
   const signOut = useCallback(async () => {
     const refresh = tokens.getRefresh();

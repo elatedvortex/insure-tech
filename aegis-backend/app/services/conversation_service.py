@@ -47,7 +47,7 @@ async def _generate_reply(
     user_id: uuid.UUID, text: str, history: list[Message], db: AsyncSession
 ) -> advisor_engine.AdvisorResponse:
     ctx = await advisor_engine.load_user_context(user_id, db)
-    return advisor_engine.get_advisor_response(text, history, ctx)
+    return await advisor_engine.get_advisor_response(text, history, ctx)
 
 
 async def create_conversation(user_id: uuid.UUID, db: AsyncSession) -> Conversation:

@@ -20,6 +20,7 @@ class ConversationOut(BaseModel):
     id: uuid.UUID
     summary: str | None
     created_at: datetime
+    updated_at: datetime
     messages: list[MessageOut] = []
 
     model_config = {"from_attributes": True}
@@ -29,6 +30,7 @@ class ConversationSummaryOut(BaseModel):
     id: uuid.UUID
     summary: str | None
     created_at: datetime
+    updated_at: datetime
 
     model_config = {"from_attributes": True}
 

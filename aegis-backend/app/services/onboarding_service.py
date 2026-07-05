@@ -19,6 +19,9 @@ async def seed_demo_data_if_empty(user_id: uuid.UUID, db: AsyncSession) -> None:
     if count and count > 0:
         return
 
+    today = date.today()
+
+    # ── Policies ───────────────────────────────────────────────────────────
     health = Policy(
         user_id=user_id,
         category="Health",
@@ -27,7 +30,7 @@ async def seed_demo_data_if_empty(user_id: uuid.UUID, db: AsyncSession) -> None:
         status="Active",
         coverage_summary="Hospitalization, OPD, and preventive care for two adults.",
         deductible=500.0,
-        renews_on=date.today() + timedelta(days=120),
+        renews_on=today + timedelta(days=120),
     )
     vehicle = Policy(
         user_id=user_id,
@@ -37,16 +40,20 @@ async def seed_demo_data_if_empty(user_id: uuid.UUID, db: AsyncSession) -> None:
         status="Active",
         coverage_summary="Collision, theft, and roadside assistance.",
         deductible=750.0,
-        renews_on=date.today() + timedelta(days=45),
+        renews_on=today + timedelta(days=45),
     )
     db.add_all([health, vehicle])
     await db.flush()
 
+    # ── Claim ──────────────────────────────────────────────────────────────
     db.add(
         Claim(
             user_id=user_id,
             policy_id=vehicle.id,
-            incident_description="Minor bike accident ? front wheel and fork damage after avoiding a pothole.",
+            incident_description=(
+                "Minor bike accident — front wheel and fork damage "
+                "after avoiding a pothole."
+            ),
             stage="Assessing damage",
             estimate=340.0,
             fraud_risk_score=0.12,
@@ -54,22 +61,40 @@ async def seed_demo_data_if_empty(user_id: uuid.UUID, db: AsyncSession) -> None:
         )
     )
 
+    # ── Notifications ──────────────────────────────────────────────────────
     db.add_all(
         [
             Notification(
                 user_id=user_id,
                 title="Welcome to Aegis",
-                body="Your AI advisor is ready. Ask about policies, claims, or your protection score anytime.",
+                body=(
+                    "Your AI advisor is ready. Ask about policies, claims, "
+                    "or your protection score anytime."
+                ),
+                read=False,
+            ),
+            Notification(
+                user_id=user_id,
+                title="Vehicle policy renews soon",
+                body=(
+                    f"Your Comprehensive Auto policy renews on "
+                    f"{(today + timedelta(days=45)).strftime('%B %d, %Y')}. "
+                    "Review your coverage before then."
+                ),
                 read=False,
             ),
             Notification(
                 user_id=user_id,
                 title="Claim update",
-                body="We're assessing damage on your recent vehicle claim. We'll notify you when the estimate is confirmed.",
+                body=(
+                    "We're assessing damage on your recent vehicle claim. "
+                    "We'll notify you when the estimate is confirmed."
+                ),
                 read=False,
             ),
         ]
     )
 
+    # ── Protection score & recommendations ─────────────────────────────────
     await protection_service.recalculate_score(user_id, db)
     await recommendation_service.generate_recommendations(user_id, db)

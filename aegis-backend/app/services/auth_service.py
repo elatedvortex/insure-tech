@@ -15,6 +15,7 @@ from app.core.security import (
     hash_token,
     verify_otp,
 )
+from app.models.audit_log import AuditLog
 from app.models.user import OtpCode, RefreshToken, User
 
 
@@ -28,8 +29,22 @@ def _ensure_utc(dt: datetime) -> datetime:
     return dt.astimezone(timezone.utc)
 
 
+async def _audit(
+    db: AsyncSession,
+    action: str,
+    user_id: uuid.UUID | None = None,
+    meta: dict | None = None,
+) -> None:
+    """Fire-and-forget audit log entry (errors are swallowed)."""
+    try:
+        db.add(AuditLog(user_id=user_id, action=action, metadata_json=meta or {}))
+    except Exception:
+        pass
+
+
 async def send_otp(email: str, db: AsyncSession) -> dict:
     """Generate and (in production) send an OTP; in dev return it directly."""
+    # --- Rate limiting: enforce resend cooldown ---
     recent = await db.execute(
         select(OtpCode)
         .where(OtpCode.email == email)
@@ -46,13 +61,14 @@ async def send_otp(email: str, db: AsyncSession) -> dict:
                 detail=f"Please wait {wait}s before requesting another code",
             )
 
-    # Expire old OTPs for this email
+    # --- Expire any unconsumed OTPs for this email ---
     result = await db.execute(
         select(OtpCode).where(OtpCode.email == email, OtpCode.consumed == False)  # noqa: E712
     )
     for old in result.scalars().all():
         old.consumed = True
 
+    # --- Generate new OTP ---
     code = generate_otp(settings.OTP_LENGTH)
     now = _utc_now()
     otp = OtpCode(
@@ -64,10 +80,21 @@ async def send_otp(email: str, db: AsyncSession) -> dict:
         created_at=now,
     )
     db.add(otp)
+
+    await _audit(db, "otp.requested", meta={"email": email})
     await db.commit()
 
-    # TODO: integrate real email sending (SendGrid / SES) here.
-    # For dev we just return the code so the frontend can display it.
+    # Write OTP to a local file for automated test/login runs
+    try:
+        import os
+        workspace_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        with open(os.path.join(workspace_dir, "otp.txt"), "w") as f:
+            f.write(code)
+    except Exception:
+        pass
+
+    # TODO: integrate real email sending (SendGrid / SES / Resend) here.
+    # For dev we return the code so the frontend can display it.
     dev_hint = code if settings.ENVIRONMENT == "development" else None
     return {"message": "OTP sent", "dev_code": dev_hint}
 
@@ -82,34 +109,56 @@ async def verify_otp_and_login(email: str, code: str, db: AsyncSession) -> dict:
     otp_record = result.scalars().first()
 
     if otp_record is None:
-        raise HTTPException(status_code=400, detail="No active OTP for this email")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No active OTP for this email. Please request a new one.",
+        )
 
     if _utc_now() > _ensure_utc(otp_record.expires_at):
-        raise HTTPException(status_code=400, detail="OTP has expired")
+        otp_record.consumed = True
+        await db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="OTP has expired. Please request a new code.",
+        )
 
     if otp_record.attempts >= settings.OTP_MAX_ATTEMPTS:
-        raise HTTPException(status_code=429, detail="Too many attempts")
+        otp_record.consumed = True
+        await db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many failed attempts. Please request a new code.",
+        )
 
     otp_record.attempts += 1
 
     if not verify_otp(code, otp_record.code_hash):
+        remaining = settings.OTP_MAX_ATTEMPTS - otp_record.attempts
         await db.commit()
-        raise HTTPException(status_code=400, detail="Invalid OTP")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid code. {remaining} attempt{'s' if remaining != 1 else ''} remaining.",
+        )
 
     otp_record.consumed = True
 
-    # Upsert user
+    # --- Upsert user ---
     from app.services import onboarding_service
 
     user_result = await db.execute(select(User).where(User.email == email))
     user = user_result.scalar_one_or_none()
-    if user is None:
+    is_new_user = user is None
+
+    if is_new_user:
         user = User(email=email, is_active=True)
         db.add(user)
         await db.flush()
-        await onboarding_service.seed_demo_data_if_empty(user.id, db)
 
-    # Issue tokens
+    # Always seed demo data if the user has no policies yet
+    # (handles the case of returning users after a DB wipe)
+    await onboarding_service.seed_demo_data_if_empty(user.id, db)
+
+    # --- Issue tokens ---
     access_token = create_access_token(str(user.id))
     raw_refresh = create_refresh_token()
     now = _utc_now()
@@ -122,6 +171,13 @@ async def verify_otp_and_login(email: str, code: str, db: AsyncSession) -> dict:
             created_at=now,
         )
     )
+
+    await _audit(
+        db,
+        "auth.login" if not is_new_user else "auth.signup",
+        user_id=user.id,
+        meta={"email": email},
+    )
     await db.commit()
 
     return {
@@ -132,7 +188,7 @@ async def verify_otp_and_login(email: str, code: str, db: AsyncSession) -> dict:
 
 
 async def refresh_access_token(raw_refresh: str, db: AsyncSession) -> dict:
-    """Exchange a valid refresh token for a new access token."""
+    """Exchange a valid refresh token for a new access + refresh token pair."""
     token_hash = hash_token(raw_refresh)
     result = await db.execute(
         select(RefreshToken).where(
@@ -143,9 +199,12 @@ async def refresh_access_token(raw_refresh: str, db: AsyncSession) -> dict:
     record = result.scalar_one_or_none()
 
     if record is None or _utc_now() > _ensure_utc(record.expires_at):
-        raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired refresh token. Please log in again.",
+        )
 
-    # Rotate: revoke old, issue new
+    # Rotate: revoke old, issue new pair
     record.revoked = True
     user_id = record.user_id
     new_access = create_access_token(str(user_id))
@@ -160,8 +219,15 @@ async def refresh_access_token(raw_refresh: str, db: AsyncSession) -> dict:
             created_at=now,
         )
     )
+
+    await _audit(db, "auth.token_refresh", user_id=user_id)
     await db.commit()
-    return {"access_token": new_access, "refresh_token": new_raw_refresh, "token_type": "bearer"}
+
+    return {
+        "access_token": new_access,
+        "refresh_token": new_raw_refresh,
+        "token_type": "bearer",
+    }
 
 
 async def logout(raw_refresh: str, db: AsyncSession) -> None:
@@ -173,4 +239,5 @@ async def logout(raw_refresh: str, db: AsyncSession) -> None:
     record = result.scalar_one_or_none()
     if record:
         record.revoked = True
+        await _audit(db, "auth.logout", user_id=record.user_id)
         await db.commit()

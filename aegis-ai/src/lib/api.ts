@@ -16,16 +16,32 @@ const KEYS = {
   refresh: "aegis_refresh_token",
 };
 
+/**
+ * Mirror the access token into a cookie so Next.js middleware can read it
+ * server-side for route protection (localStorage is not available in middleware).
+ */
+function syncCookie(access: string | null) {
+  if (typeof document === "undefined") return;
+  if (access) {
+    // SameSite=Lax is safe for same-origin; omit Secure so it works on http://localhost
+    document.cookie = `${KEYS.access}=${access}; path=/; SameSite=Lax; max-age=86400`;
+  } else {
+    document.cookie = `${KEYS.access}=; path=/; SameSite=Lax; max-age=0`;
+  }
+}
+
 export const tokens = {
   getAccess: () => (typeof window !== "undefined" ? localStorage.getItem(KEYS.access) : null),
   getRefresh: () => (typeof window !== "undefined" ? localStorage.getItem(KEYS.refresh) : null),
   set: (access: string, refresh: string) => {
     localStorage.setItem(KEYS.access, access);
     localStorage.setItem(KEYS.refresh, refresh);
+    syncCookie(access);
   },
   clear: () => {
     localStorage.removeItem(KEYS.access);
     localStorage.removeItem(KEYS.refresh);
+    syncCookie(null);
   },
 };
 
@@ -67,8 +83,10 @@ async function doRefresh(): Promise<string> {
   }
 
   const data = await res.json();
-  // refresh endpoint only returns a new access_token; keep the same refresh
-  tokens.set(data.access_token, raw);
+  // The backend rotates the refresh token on every refresh — store both tokens.
+  // (Previously the new refresh_token was silently discarded here.)
+  const newRefresh = data.refresh_token ?? raw;
+  tokens.set(data.access_token, newRefresh);
   return data.access_token;
 }
 
@@ -189,6 +207,23 @@ export const conversationApi = {
   get: (id: string) => api.get<Conversation>(`/api/v1/conversations/${id}`),
   send: (id: string, text: string) =>
     api.post<Conversation>(`/api/v1/conversations/${id}/messages`, { text }),
+  /**
+   * Open a Server-Sent Events stream for real-time advisor replies.
+   * Returns the raw Response so the caller can read the body as a stream.
+   */
+  stream: async (id: string, text: string): Promise<Response> => {
+    const access = tokens.getAccess();
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      Accept: "text/event-stream",
+    };
+    if (access) headers["Authorization"] = `Bearer ${access}`;
+    return fetch(`${BASE}/api/v1/conversations/${id}/messages/stream`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ text }),
+    });
+  },
 };
 
 // Notifications
@@ -289,6 +324,7 @@ export interface Conversation {
   id: string;
   summary: string | null;
   created_at: string;
+  updated_at: string;
   messages: Message[];
 }
 
@@ -301,8 +337,11 @@ export interface Notification {
 }
 
 export interface ProtectionScore {
+  id: string;
+  user_id: string;
   overall: number;
-  breakdown: { label: string; score: number; weight: number }[];
+  breakdown: { label: string; score: number; weight?: number }[];
+  updated_at: string;
 }
 
 export interface Recommendation {

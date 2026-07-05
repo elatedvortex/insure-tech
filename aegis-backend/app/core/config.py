@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     ]
 
     ENVIRONMENT: str = "development"
+    GEMINI_API_KEY: str | None = None
 
 
 settings = Settings()

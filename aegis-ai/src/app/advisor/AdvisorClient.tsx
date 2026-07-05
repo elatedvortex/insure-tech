@@ -95,7 +95,7 @@ export default function AdvisorClient() {
     bootstrap();
   }, [bootstrap]);
 
-  // ── Send to real backend ────────────────────────────────────────────────
+  // ── Send to real backend with SSE streaming ────────────────────────────
 
   async function sendMessageToBackend(cid: string, text: string) {
     const userMsg = makeMessage("user", text);
@@ -103,14 +103,72 @@ export default function AdvisorClient() {
     setThinking(true);
 
     try {
-      const conv = await conversationApi.send(cid, text);
-      // Replace all messages with authoritative backend state
-      setMessages(conv.messages.map(backendMsgToChat));
-    } catch {
-      // If backend fails, fall back to streaming local reply
-      await sendMessageLocalStream(text);
-    } finally {
+      const res = await conversationApi.stream(cid, text);
+      if (!res.ok || !res.body) throw new Error("stream failed");
+
       setThinking(false);
+      setStreaming(true);
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let assistantText = "";
+      let cards: AnyCard[] | undefined;
+      let quickReplies: string[] | undefined;
+      const assistantId = Math.random().toString(36).slice(2, 10);
+      let started = false;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const parts = buffer.split("\n\n");
+        buffer = parts.pop() || "";
+
+        for (const part of parts) {
+          if (!part.startsWith("data: ")) continue;
+          try {
+            const payload = JSON.parse(part.slice(6));
+            if (payload.type === "token") {
+              if (!started) {
+                started = true;
+                setMessages((prev) => [
+                  ...prev,
+                  { id: assistantId, role: "assistant", text: "", timestamp: Date.now() },
+                ]);
+              }
+              assistantText += payload.value;
+              setMessages((prev) =>
+                prev.map((m) => (m.id === assistantId ? { ...m, text: assistantText } : m)),
+              );
+            } else if (payload.type === "cards") {
+              cards = payload.value;
+              setMessages((prev) =>
+                prev.map((m) => (m.id === assistantId ? { ...m, cards } : m)),
+              );
+            } else if (payload.type === "quickReplies") {
+              quickReplies = payload.value;
+              setMessages((prev) =>
+                prev.map((m) => (m.id === assistantId ? { ...m, quickReplies } : m)),
+              );
+            }
+          } catch {
+            // skip malformed SSE frames
+          }
+        }
+      }
+
+      setStreaming(false);
+    } catch {
+      setThinking(false);
+      setStreaming(false);
+      // If streaming fails, try the non-streaming endpoint as fallback
+      try {
+        const conv = await conversationApi.send(cid, text);
+        setMessages(conv.messages.map(backendMsgToChat));
+      } catch {
+        await sendMessageLocalStream(text);
+      }
     }
   }
 

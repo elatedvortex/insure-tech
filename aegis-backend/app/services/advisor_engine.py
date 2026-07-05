@@ -1,22 +1,29 @@
 """
-Context-aware advisor stub ? mirrors the frontend advisor-engine intents but
-enriches replies with the user's real policies, claims, and protection score.
+Context-aware AI advisor using Google Gemini, returning structured responses with dynamic UI cards.
 """
 from __future__ import annotations
 
-import re
+import json
+import logging
 import uuid
 from dataclasses import dataclass, field
 from typing import Any
 
+import google.generativeai as genai
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.core.config import settings
 from app.models.claim import Claim
 from app.models.conversation import Message
 from app.models.policy import Policy
 from app.models.protection_score import ProtectionScore
+
+logger = logging.getLogger(__name__)
+
+if settings.GEMINI_API_KEY:
+    genai.configure(api_key=settings.GEMINI_API_KEY)
 
 
 @dataclass
@@ -61,36 +68,10 @@ async def load_user_context(user_id: uuid.UUID, db: AsyncSession) -> UserContext
     return UserContext(policies=list(policies), claims=list(claims), protection=protection)
 
 
-def _detect_intent(text: str) -> str:
-    t = text.lower()
-    if re.search(r"\b(car|vehicle|drive|motor|auto)\b", t) and re.search(
-        r"\b(bought|new|got|purchase)\b", t
-    ):
-        return "new_car"
-    if re.search(r"\b(accident|crash|dent|collision|scratch)\b", t):
-        return "claim_incident"
-    if re.search(r"\b(score|protection score)\b", t):
-        return "protection_score"
-    if re.search(r"\bclaim status\b|\bmy claim\b|\btrack\b.*\bclaim\b", t):
-        return "claim_status"
-    if re.search(r"\b(policy|policies|cover|coverage)\b", t):
-        return "policies"
-    if re.search(r"\b(recommend|suggest|gap)\b", t):
-        return "recommendations"
-    if re.search(r"\b(hi|hello|hey|start)\b", t):
-        return "greeting"
-    if re.search(r"\bclaim\b", t):
-        return "claim_general"
-    if re.search(r"\byes\b", t):
-        return "affirm"
-    return "unknown"
-
-
 def _policy_summary_card(ctx: UserContext) -> dict[str, Any] | None:
     active = [p for p in ctx.policies if p.status == "Active"]
     if not active:
         return None
-    lines = [f"{p.name} ({p.category}) ? ${p.monthly_premium:.0f}/mo" for p in active[:4]]
     return {
         "kind": "comparison",
         "options": [
@@ -135,129 +116,100 @@ def _claim_status_card(claim: Claim) -> dict[str, Any]:
     }
 
 
-def get_advisor_response(
+def _recommendation_card(ctx: UserContext) -> dict[str, Any] | None:
+    missing = {"Life", "Home", "Travel", "Vehicle", "Health", "Business"} - {
+        p.category for p in ctx.policies if p.status == "Active"
+    }
+    if not missing:
+        return None
+    cat = sorted(missing)[0]
+    card_cat = CATEGORY_TO_CARD.get(cat, cat)
+    return {
+        "kind": "recommendation",
+        "category": card_cat,
+        "title": f"{cat} protection plan",
+        "reasoning": f"You have active policies but no dedicated {cat} cover yet.",
+        "monthlyPremium": 45.0 if cat == "Travel" else 85.0,
+        "coverage": f"Core {cat.lower()} risks with flexible deductibles.",
+    }
+
+
+async def get_advisor_response(
     user_text: str,
     history: list[Message],
     ctx: UserContext,
 ) -> AdvisorResponse:
-    intent = _detect_intent(user_text)
-    last_assistant = next((m for m in reversed(history) if m.role == "assistant"), None)
-    last_text = (last_assistant.text or "") if last_assistant else ""
-
-    if intent == "affirm" and "everyone okay" in last_text.lower():
-        claim = ctx.claims[0] if ctx.claims else None
-        if claim:
-            return AdvisorResponse(
-                text=(
-                    "Good ? that's what matters most. I've pulled up your open claim "
-                    "and here's the latest status."
-                ),
-                cards=[_claim_status_card(claim)],
-                quick_replies=["Check claim status", "Talk to a human", "What's covered?"],
-            )
-
-    if intent == "protection_score":
-        score = ctx.protection.overall if ctx.protection else None
-        lead = (
-            f"Your protection score is {score}/100. Here's how you're covered by category."
-            if score is not None
-            else "Here's your protection breakdown based on active policies."
-        )
+    if not settings.GEMINI_API_KEY:
         return AdvisorResponse(
-            text=lead,
-            cards=[_protection_card(ctx)],
-            quick_replies=["Show gaps", "Recommend coverage", "View policies"],
+            text="I'm here for anything insurance-related! (Please set GEMINI_API_KEY in your .env for the full AI experience.)",
+            quick_replies=["Policies", "Claims", "Protection score"]
         )
 
-    if intent == "claim_status":
-        if not ctx.claims:
-            return AdvisorResponse(
-                text="You don't have any claims on file yet. Want to start one?",
-                quick_replies=["File a new claim", "View policies", "Not now"],
-            )
+    # Prepare context for the prompt
+    policies_ctx = [{"category": p.category, "name": p.name, "premium": p.monthly_premium} for p in ctx.policies]
+    claims_ctx = [{"incident": c.incident_description, "stage": c.stage, "estimate": c.estimate} for c in ctx.claims]
+    score_ctx = ctx.protection.overall if ctx.protection else "Unknown"
+
+    system_prompt = f"""You are Aegis, a premium, intelligent AI insurance advisor.
+Your goal is to help the user manage their insurance, file claims, and understand their coverage.
+Tone: Professional, concise, empathetic, premium. Do not hallucinate policies they don't have.
+
+User Context:
+- Active Policies: {json.dumps(policies_ctx)}
+- Open Claims: {json.dumps(claims_ctx)}
+- Protection Score: {score_ctx}/100
+
+Respond ONLY in valid JSON with exactly this structure:
+{{
+  "text": "Your conversational reply. Max 2-3 sentences.",
+  "intent": "one of: [greeting, policies, claim_status, claim_incident, protection_score, recommendations, unknown]",
+  "quick_replies": ["Suggest 1", "Suggest 2", "Suggest 3"]
+}}
+"""
+
+    gemini_history = []
+    for m in history[-10:]:
+        role = "user" if m.role == "user" else "model"
+        gemini_history.append({"role": role, "parts": [m.text]})
+
+    try:
+        model = genai.GenerativeModel(
+            model_name="gemini-2.5-flash", 
+            system_instruction=system_prompt,
+            generation_config={"response_mime_type": "application/json"}
+        )
+        chat = model.start_chat(history=gemini_history)
+        response = await chat.send_message_async(user_text)
+        
+        data = json.loads(response.text)
+        text = data.get("text", "I'm here to help.")
+        intent = data.get("intent", "unknown")
+        quick_replies = data.get("quick_replies", ["View policies", "Check claims"])
+        
+        # Attach dynamic UI cards based on Gemini's selected intent
+        cards = []
+        if intent == "protection_score":
+            cards.append(_protection_card(ctx))
+        elif intent == "claim_status" and ctx.claims:
+            cards.append(_claim_status_card(ctx.claims[0]))
+        elif intent == "policies":
+            card = _policy_summary_card(ctx)
+            if card: cards.append(card)
+        elif intent == "greeting" and ctx.policies:
+            cards.append(_protection_card(ctx))
+        elif intent == "recommendations":
+            card = _recommendation_card(ctx)
+            if card: cards.append(card)
+
         return AdvisorResponse(
-            text="Here's your most recent claim:",
-            cards=[_claim_status_card(ctx.claims[0])],
-            quick_replies=["File another claim", "View all policies"],
+            text=text,
+            cards=cards,
+            quick_replies=quick_replies,
         )
-
-    if intent == "policies":
-        active = [p for p in ctx.policies if p.status == "Active"]
-        if not active:
-            return AdvisorResponse(
-                text="You don't have active policies yet. I can recommend starter coverage if you'd like.",
-                quick_replies=["Show recommendations", "Get a quote", "Not now"],
-            )
-        names = ", ".join(p.name for p in active[:3])
-        card = _policy_summary_card(ctx)
+        
+    except Exception as e:
+        logger.error(f"Gemini API error: {e}")
         return AdvisorResponse(
-            text=f"You have {len(active)} active polic{'y' if len(active) == 1 else 'ies'}: {names}.",
-            cards=[card] if card else [],
-            quick_replies=["Add coverage", "Protection score", "File a claim"],
+            text="I'm having a little trouble connecting to my AI brain right now. Can we try again?",
+            quick_replies=["Try again", "Go to dashboard"]
         )
-
-    if intent == "recommendations":
-        missing = {"Life", "Home", "Travel", "Vehicle", "Health", "Business"} - {
-            p.category for p in ctx.policies if p.status == "Active"
-        }
-        if not missing:
-            return AdvisorResponse(
-                text="You're well covered across major categories. Want a deeper review or a better rate?",
-                quick_replies=["Compare plans", "Protection score", "Not now"],
-            )
-        cat = sorted(missing)[0]
-        card_cat = CATEGORY_TO_CARD.get(cat, cat)
-        return AdvisorResponse(
-            text=f"Based on your portfolio, {cat} coverage would strengthen your protection score.",
-            cards=[
-                {
-                    "kind": "recommendation",
-                    "category": card_cat,
-                    "title": f"{cat} protection plan",
-                    "reasoning": f"You have active policies but no dedicated {cat} cover yet.",
-                    "monthlyPremium": 45.0 if cat == "Travel" else 85.0,
-                    "coverage": f"Core {cat.lower()} risks with flexible deductibles.",
-                }
-            ],
-            quick_replies=["Get a quote", "Tell me more", "Not now"],
-        )
-
-    if intent == "new_car":
-        return AdvisorResponse(
-            text="Congratulations on the new car. Is it mainly for daily commuting or occasional use?",
-            quick_replies=["Daily commuting", "Occasional use", "Just show me options"],
-        )
-
-    if intent == "claim_incident":
-        return AdvisorResponse(
-            text="I'm sorry to hear that ? let's get this sorted. First: is everyone okay?",
-            quick_replies=["Yes, everyone's safe", "Someone's hurt"],
-        )
-
-    if intent == "claim_general":
-        return AdvisorResponse(
-            text=(
-                "I can help you file a claim or check an existing one. "
-                "Describe what happened, or pick an option below."
-            ),
-            quick_replies=["File a new claim", "Check claim status", "Cancel"],
-        )
-
-    if intent == "greeting":
-        return AdvisorResponse(
-            text=(
-                "Hi! I'm Aegis, your AI insurance advisor. "
-                "I can help with policies, claims, recommendations, and your protection score. "
-                "What would you like to do?"
-            ),
-            cards=[_protection_card(ctx)] if ctx.policies else [],
-            quick_replies=["View my policies", "File a claim", "My protection score"],
-        )
-
-    return AdvisorResponse(
-        text=(
-            "I'm here for anything insurance-related ? claims, policies, "
-            "recommendations, or your protection score. What should we look at?"
-        ),
-        quick_replies=["Policies", "Claims", "Protection score", "Recommendations"],
-    )

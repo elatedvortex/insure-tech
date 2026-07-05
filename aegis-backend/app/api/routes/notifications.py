@@ -20,15 +20,8 @@ async def list_notifications(
     return await notification_service.list_notifications(current_user.id, db)
 
 
-@router.post("/{notif_id}/read", response_model=NotificationOut, summary="Mark notification as read")
-async def mark_read(
-    notif_id: uuid.UUID,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    return await notification_service.mark_read(notif_id, current_user.id, db)
-
-
+# ⚠️ /read-all MUST be registered BEFORE /{notif_id}/read
+# so FastAPI does not try to parse the literal string "read-all" as a UUID.
 @router.post("/read-all", summary="Mark all notifications as read")
 async def mark_all_read(
     current_user: User = Depends(get_current_user),
@@ -36,3 +29,12 @@ async def mark_all_read(
 ):
     count = await notification_service.mark_all_read(current_user.id, db)
     return {"marked_read": count}
+
+
+@router.post("/{notif_id}/read", response_model=NotificationOut, summary="Mark notification as read")
+async def mark_read(
+    notif_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    return await notification_service.mark_read(notif_id, current_user.id, db)
