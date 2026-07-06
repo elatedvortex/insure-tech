@@ -9,6 +9,20 @@
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
 
+const AUTH_TOKEN_PATHS = [
+  "/api/v1/auth/login",
+  "/api/v1/auth/register",
+  "/api/v1/auth/oauth",
+  "/api/v1/auth/password/forgot",
+  "/api/v1/auth/password/reset",
+  "/api/v1/auth/refresh",
+  "/api/v1/auth/logout",
+];
+
+function shouldAttemptRefresh(path: string) {
+  return !AUTH_TOKEN_PATHS.some((authPath) => path.startsWith(authPath));
+}
+
 // ── Token storage ──────────────────────────────────────────────────────────
 
 const KEYS = {
@@ -108,7 +122,7 @@ async function request<T>(
 
   const res = await fetch(`${BASE}${path}`, { ...init, headers });
 
-  if (res.status === 401 && retry) {
+  if (res.status === 401 && retry && shouldAttemptRefresh(path)) {
     if (isRefreshing) {
       // Queue this request until the ongoing refresh finishes
       return new Promise((resolve, reject) => {
