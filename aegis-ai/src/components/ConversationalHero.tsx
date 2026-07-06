@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ArrowUp, Mic, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Presence } from "./Presence";
@@ -28,10 +28,11 @@ export function ConversationalHero() {
   const [listening, setListening] = useState(false);
   const [placeholderIdx, setPlaceholderIdx] = useState(0);
   const [focused, setFocused] = useState(false);
+  const [pointer, setPointer] = useState({ x: 0, y: 0 });
   const router = useRouter();
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const reduced = useReducedMotion();
 
-  // Cycle placeholder text
   useEffect(() => {
     const t = setInterval(() => {
       if (!focused) setPlaceholderIdx((i) => (i + 1) % PLACEHOLDERS.length);
@@ -52,21 +53,35 @@ export function ConversationalHero() {
     }, 1600);
   }
 
-  return (
-    <section className="relative flex flex-col items-center justify-center px-6 pt-28 pb-24 sm:pt-40 sm:pb-32 overflow-hidden">
+  function handlePointerMove(event: React.MouseEvent<HTMLElement>) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    setPointer({ x: event.clientX - rect.left, y: event.clientY - rect.top });
+  }
 
-      {/* Multi-layer ambient glow */}
+  return (
+    <section
+      onMouseMove={reduced ? undefined : handlePointerMove}
+      onMouseLeave={() => setPointer({ x: 0, y: 0 })}
+      className="relative flex flex-col items-center justify-center px-6 pt-28 pb-24 sm:pt-40 sm:pb-32 overflow-hidden"
+    >
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full bg-[radial-gradient(circle,var(--pine)/6%_0%,transparent_65%)]" />
         <div className="absolute left-[30%] top-[20%] w-[400px] h-[400px] rounded-full bg-[radial-gradient(circle,var(--clay)/4%_0%,transparent_70%)]" />
         <div className="absolute right-[20%] top-[40%] w-[300px] h-[300px] rounded-full bg-[radial-gradient(circle,var(--pine-bright)/3%_0%,transparent_70%)]" />
+        {!reduced ? (
+          <div
+            className="absolute inset-0 opacity-80"
+            style={{
+              background: `radial-gradient(320px circle at ${pointer.x}px ${pointer.y}px, rgba(16, 185, 129, 0.11), transparent 62%)`,
+            }}
+          />
+        ) : null}
       </div>
 
-      {/* Eyebrow badge */}
       <motion.div
-        initial={{ opacity: 0, y: 16, scale: 0.9 }}
+        initial={reduced ? false : { opacity: 0, y: 16, scale: 0.9 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ type: "spring", stiffness: 120, damping: 18 }}
+        transition={reduced ? { duration: 0.01 } : { type: "spring", stiffness: 120, damping: 18 }}
         className="flex items-center gap-2 mb-8 px-4 py-2 rounded-full border border-pine/30 bg-pine/5 backdrop-blur-sm"
       >
         <Sparkles className="w-3.5 h-3.5 text-pine" />
@@ -76,11 +91,10 @@ export function ConversationalHero() {
         <span className="w-1.5 h-1.5 rounded-full bg-pine animate-breathe" />
       </motion.div>
 
-      {/* Hero heading */}
       <motion.h1
-        initial={{ opacity: 0, y: 24, filter: "blur(12px)" }}
+        initial={reduced ? false : { opacity: 0, y: 24, filter: "blur(12px)" }}
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        transition={{ type: "spring", stiffness: 90, damping: 18, delay: 0.08 }}
+        transition={reduced ? { duration: 0.01 } : { type: "spring", stiffness: 90, damping: 18, delay: 0.08 }}
         className="font-display text-[clamp(2.6rem,7vw,5.5rem)] font-semibold tracking-tight text-center leading-[1.04] max-w-4xl"
       >
         <span className="bg-clip-text text-transparent bg-gradient-to-br from-ink via-ink to-ink-soft">
@@ -91,34 +105,31 @@ export function ConversationalHero() {
           <span className="bg-clip-text text-transparent bg-gradient-to-r from-pine via-pine-bright to-pine">
             before you do.
           </span>
-          {/* Underline accent */}
           <motion.span
-            initial={{ scaleX: 0 }}
+            initial={reduced ? false : { scaleX: 0 }}
             animate={{ scaleX: 1 }}
-            transition={{ delay: 0.6, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            transition={reduced ? { duration: 0.01 } : { delay: 0.6, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             className="absolute -bottom-1 left-0 right-0 h-[3px] rounded-full bg-gradient-to-r from-pine/60 via-pine to-pine/60 origin-left"
           />
         </span>
       </motion.h1>
 
-      {/* Subtext */}
       <motion.p
-        initial={{ opacity: 0, y: 16 }}
+        initial={reduced ? false : { opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.2 }}
+        transition={reduced ? { duration: 0.01 } : { type: "spring", stiffness: 100, damping: 20, delay: 0.2 }}
         className="mt-6 text-base sm:text-lg text-sage max-w-lg text-center leading-relaxed"
       >
         Ask in plain language. Get honest, personalised coverage guidance — no forms, no jargon.
       </motion.p>
 
-      {/* Input card */}
       <motion.div
-        initial={{ opacity: 0, y: 28, scale: 0.96 }}
+        initial={reduced ? false : { opacity: 0, y: 28, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ type: "spring", stiffness: 90, damping: 18, delay: 0.3 }}
+        transition={reduced ? { duration: 0.01 } : { type: "spring", stiffness: 90, damping: 18, delay: 0.3 }}
+        whileHover={reduced ? undefined : { y: -2, scale: 1.008, rotateX: 1, rotateY: -0.8 }}
         className="w-full max-w-2xl mt-12 relative"
       >
-        {/* Glow ring on focus */}
         <div
           className={`absolute inset-0 rounded-[28px] transition-all duration-500 pointer-events-none ${
             focused
@@ -157,7 +168,6 @@ export function ConversationalHero() {
                 value={value}
                 onChange={(e) => {
                   setValue(e.target.value);
-                  // Auto-grow
                   e.target.style.height = "auto";
                   e.target.style.height = `${Math.min(e.target.scrollHeight, 128)}px`;
                 }}
@@ -200,21 +210,20 @@ export function ConversationalHero() {
         </div>
       </motion.div>
 
-      {/* Prompt chips */}
       <motion.div
-        initial={{ opacity: 0, y: 12 }}
+        initial={reduced ? false : { opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.55, duration: 0.5 }}
+        transition={reduced ? { duration: 0.01 } : { delay: 0.55, duration: 0.5 }}
         className="mt-7 flex flex-wrap justify-center gap-2 max-w-2xl"
       >
         {PROMPTS.map((p, i) => (
           <motion.button
             key={p}
-            initial={{ opacity: 0, scale: 0.88 }}
+            initial={reduced ? false : { opacity: 0, scale: 0.88 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: "spring", stiffness: 180, damping: 16, delay: 0.6 + i * 0.04 }}
+            transition={reduced ? { duration: 0.01 } : { type: "spring", stiffness: 180, damping: 16, delay: 0.6 + i * 0.04 }}
             onClick={() => go(p)}
-            whileHover={{ y: -2 }}
+            whileHover={reduced ? undefined : { y: -2 }}
             whileTap={{ scale: 0.96 }}
             className="text-[13px] px-4 py-2 rounded-full border border-surface-line bg-surface/60 backdrop-blur-sm text-ink-soft hover:border-pine/50 hover:text-pine hover:bg-pine/5 transition-all duration-200"
           >
@@ -223,24 +232,57 @@ export function ConversationalHero() {
         ))}
       </motion.div>
 
-      {/* Stats row */}
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
+        initial={reduced ? false : { opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.9, duration: 0.5 }}
+        transition={reduced ? { duration: 0.01 } : { delay: 0.9, duration: 0.5 }}
         className="mt-14 flex items-center gap-8 sm:gap-12"
       >
         {[
-          { label: "Policies analysed", value: "12,000+" },
-          { label: "Average savings", value: "28%" },
-          { label: "Claims supported", value: "3,400+" },
-        ].map(({ label, value: v }) => (
+          { label: "Policies analysed", value: 12000, suffix: "+" },
+          { label: "Average savings", value: 28, suffix: "%" },
+          { label: "Claims supported", value: 3400, suffix: "+" },
+        ].map(({ label, value, suffix }) => (
           <div key={label} className="flex flex-col items-center gap-1">
-            <span className="font-display text-2xl sm:text-3xl font-semibold text-ink">{v}</span>
+            <CountUp end={value} suffix={suffix} />
             <span className="text-[11px] uppercase tracking-wider text-sage font-mono">{label}</span>
           </div>
         ))}
       </motion.div>
     </section>
+  );
+}
+
+function CountUp({ end, suffix = "" }: { end: number; suffix?: string }) {
+  const [value, setValue] = useState(0);
+  const reduced = useReducedMotion();
+
+  useEffect(() => {
+    if (reduced) {
+      setValue(end);
+      return;
+    }
+
+    let frame = 0;
+    const duration = 1200;
+    const start = performance.now();
+
+    function tick(now: number) {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setValue(Math.round(end * eased));
+      if (progress < 1) {
+        frame = window.requestAnimationFrame(tick);
+      }
+    }
+
+    frame = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(frame);
+  }, [end, reduced]);
+
+  return (
+    <span className="font-display text-2xl sm:text-3xl font-semibold text-ink">
+      {new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value)}{suffix}
+    </span>
   );
 }

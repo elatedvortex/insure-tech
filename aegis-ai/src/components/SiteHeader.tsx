@@ -4,11 +4,19 @@ import { useEffect, useState } from "react";
 import { Moon, Sun, ShieldCheck, LogOut } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth";
+
+const navItems = [
+  { href: "/advisor", label: "Talk to Aegis" },
+  { href: "/dashboard", label: "Workspace" },
+];
 
 export function SiteHeader({ showLogin = false }: { showLogin?: boolean }) {
   const [dark, setDark] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const pathname = usePathname();
   const { user, signOut, loading } = useAuth();
 
   useEffect(() => {
@@ -21,7 +29,14 @@ export function SiteHeader({ showLogin = false }: { showLogin?: boolean }) {
   }, []);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 12);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 12);
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      const nextProgress = maxScroll > 0 ? window.scrollY / maxScroll : 0;
+      setScrollProgress(nextProgress);
+    };
+
+    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -44,33 +59,49 @@ export function SiteHeader({ showLogin = false }: { showLogin?: boolean }) {
           : "bg-transparent border-b border-transparent"
       }`}
     >
-      {/* Logo */}
+      <div className="absolute inset-x-0 top-full h-px bg-gradient-to-r from-transparent via-surface-line/70 to-transparent" />
+      <motion.div
+        className="absolute inset-x-0 top-0 h-[2px] origin-left bg-gradient-to-r from-pine via-pine-bright to-clay"
+        style={{ scaleX: scrollProgress }}
+      />
+
       <Link href="/" className="flex items-center gap-2.5 group">
-        <div className="w-8 h-8 rounded-xl bg-pine flex items-center justify-center shadow-[0_2px_8px_var(--pine)/40] group-hover:scale-105 transition-transform">
+        <motion.div
+          whileHover={{ scale: 1.05, rotate: -4 }}
+          className="w-8 h-8 rounded-xl bg-pine flex items-center justify-center shadow-[0_2px_8px_var(--pine)/40]"
+        >
           <ShieldCheck className="w-4.5 h-4.5 text-paper" strokeWidth={2.5} />
-        </div>
+        </motion.div>
         <span className="font-display font-bold text-[17px] tracking-tight text-ink group-hover:text-pine transition-colors">
           Aegis
         </span>
       </Link>
 
-      {/* Centre nav */}
-      <nav className="hidden sm:flex items-center gap-1 px-2 py-1.5 rounded-full border border-surface-line/70 bg-surface/50 backdrop-blur-sm">
-        {[
-          { href: "/advisor", label: "Talk to Aegis" },
-          { href: "/dashboard", label: "Workspace" },
-        ].map(({ href, label }) => (
-          <Link
-            key={href}
-            href={href}
-            className="px-4 py-1.5 rounded-full text-[13px] font-medium text-ink-soft hover:text-ink hover:bg-paper transition-all duration-200"
-          >
-            {label}
-          </Link>
-        ))}
+      <nav className="hidden sm:flex items-center gap-1 px-2 py-1.5 rounded-full border border-surface-line/70 bg-surface/50 backdrop-blur-sm relative">
+        {navItems.map(({ href, label }) => {
+          const active = pathname === href || (href !== "/" && pathname.startsWith(href));
+          return (
+            <motion.div key={href} className="relative">
+              <Link
+                href={href}
+                className={`relative z-10 px-4 py-1.5 rounded-full text-[13px] font-medium transition-all duration-200 ${
+                  active ? "text-ink" : "text-ink-soft hover:text-ink"
+                }`}
+              >
+                {label}
+              </Link>
+              {active ? (
+                <motion.span
+                  layoutId="nav-pill"
+                  className="absolute inset-0 rounded-full bg-paper shadow-[0_4px_18px_rgba(15,23,42,0.06)]"
+                  transition={{ type: "spring", stiffness: 260, damping: 24 }}
+                />
+              ) : null}
+            </motion.div>
+          );
+        })}
       </nav>
 
-      {/* Right actions */}
       <div className="flex items-center gap-2">
         <button
           onClick={toggle}
@@ -82,7 +113,6 @@ export function SiteHeader({ showLogin = false }: { showLogin?: boolean }) {
         </button>
 
         {!loading && user ? (
-          /* Signed-in: show user email + logout */
           <div className="flex items-center gap-2">
             <span className="hidden sm:block text-[12px] text-ink-soft max-w-[140px] truncate">
               {user.name ?? user.email}
