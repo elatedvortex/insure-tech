@@ -2,16 +2,11 @@
 
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { Cat, Dog } from "lucide-react";
-import { useEffect, useState } from "react";
+import { usePetState } from "./PetStateProvider";
 
 export function EasterEgg() {
   const { scrollY } = useScroll();
-  const [isCat, setIsCat] = useState(true);
-
-  useEffect(() => {
-    // Randomly pick cat or dog on mount
-    setIsCat(Math.random() > 0.5);
-  }, []);
+  const { isCat, togglePet } = usePetState();
 
   // When scrolling down, peek out.
   const rawX = useTransform(
@@ -31,14 +26,14 @@ export function EasterEgg() {
 
   return (
     <motion.div
-      className="fixed top-1/2 right-0 -translate-y-1/2 z-[100] bg-surface/80 backdrop-blur-xl border-t border-b border-l border-white/10 rounded-l-[32px] p-4 shadow-2xl origin-right cursor-pointer"
+      className="fixed top-1/2 right-0 -translate-y-1/2 z-100 bg-surface/80 backdrop-blur-xl border-t border-b border-l border-white/10 rounded-l-[32px] p-4 shadow-2xl origin-right cursor-pointer"
       style={{
         x: springX,
         rotate: springRotate,
       }}
       whileHover={{ scale: 1.1, x: -25, rotate: 0 }}
       whileTap={{ scale: 0.9 }}
-      onClick={() => setIsCat(!isCat)}
+      onClick={togglePet}
       title="Woof / Meow"
     >
       {isCat ? (
