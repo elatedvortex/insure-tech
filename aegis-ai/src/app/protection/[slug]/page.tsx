@@ -27,7 +27,7 @@ export default async function CategoryPage({
 
   return (
     <>
-      <AnimatedBackground shapes={getCategoryShapes(category.accentIcon)} />
+      <AnimatedBackground shapes={getCategoryShapes(category.accentIcon)} theme={category.accentIcon} />
       <AnimatedIconField kind={category.accentIcon} count={7} />
       <SiteHeader showLogin />
       <CategorySwitcher activeSlug={slug} />
