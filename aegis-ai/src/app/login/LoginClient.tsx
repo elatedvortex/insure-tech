@@ -7,6 +7,7 @@ import { ArrowRight, Eye, EyeOff, KeyRound, Mail } from "lucide-react";
 import { AuthHeader } from "@/components/auth/AuthHeader";
 import { OAuthButton } from "@/components/auth/OAuthButton";
 import { Presence } from "@/components/Presence";
+import { useAuth } from "@/lib/auth";
 import { authApi, ApiError, tokens } from "@/lib/api";
 
 type Mode = "signin" | "signup" | "forgot" | "reset";
@@ -18,6 +19,7 @@ type GoogleCredentialResponse = {
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { refreshUser } = useAuth();
   const resetToken = searchParams.get("reset") || "";
   const nextPath = searchParams.get("next") || "/dashboard";
 
@@ -78,8 +80,9 @@ export default function LoginPage() {
     return "Welcome back.";
   }, [mode]);
 
-  function completeLogin(data: { access_token: string; refresh_token: string }) {
+  async function completeLogin(data: { access_token: string; refresh_token: string }) {
     tokens.set(data.access_token, data.refresh_token);
+    await refreshUser();
     router.replace(nextPath.startsWith("/") ? nextPath : "/dashboard");
   }
 
