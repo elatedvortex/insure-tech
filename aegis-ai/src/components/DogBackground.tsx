@@ -32,6 +32,8 @@ export function DogBackground() {
   const smX = useSpring(mouseX, springCfg);
   const smY = useSpring(mouseY, springCfg);
 
+  const glowColor = isCat ? "rgba(249,115,22,0.28)" : "rgba(16,185,129,0.28)";
+
   // Use a fixed generous range — no window reads during render
   const pupilDx = useTransform(smX, [0, 2000], [-7, 7]);
   const pupilDy = useTransform(smY, [0, 1200], [-5, 5]);
@@ -41,8 +43,11 @@ export function DogBackground() {
       aria-hidden
       className="pointer-events-none fixed inset-0 -z-10"
     >
-      {/* Soft radial glow behind dog */}
-      <div className="absolute bottom-0 right-0 w-[700px] h-[700px] rounded-full opacity-[0.08] bg-[radial-gradient(circle,var(--pine)_0%,transparent_70%)] translate-x-1/4 translate-y-1/4 pointer-events-none" />
+      {/* Soft radial glow behind pet */}
+      <div
+        className="absolute bottom-0 right-0 w-[700px] h-[700px] rounded-full opacity-[0.12] translate-x-1/4 translate-y-1/4 pointer-events-none"
+        style={{ background: `radial-gradient(circle, ${glowColor} 0%, transparent 68%)` }}
+      />
 
       {/* Pet — starts peeking from below, rises as you scroll */}
       <motion.div
@@ -50,6 +55,9 @@ export function DogBackground() {
         style={{ bottom: "-200px", y: scrollY }}
       >
         {isCat ? <CatSVG pupilDx={pupilDx} pupilDy={pupilDy} /> : <DogSVG pupilDx={pupilDx} pupilDy={pupilDy} />}
+        <div className="mt-2 text-center text-[11px] uppercase tracking-[0.15em] text-sage/80">
+          {isCat ? "Cat mode" : "Dog mode"}
+        </div>
       </motion.div>
     </div>
   );
