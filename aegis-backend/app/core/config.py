@@ -14,11 +14,7 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
-
-    OTP_EXPIRE_MINUTES: int = 10
-    OTP_LENGTH: int = 6
-    OTP_MAX_ATTEMPTS: int = 5
-    OTP_RESEND_COOLDOWN_SECONDS: int = 30
+    PASSWORD_RESET_EXPIRE_MINUTES: int = 30
 
     CORS_ORIGINS: list[str] = [
         "http://localhost:3000",
@@ -29,5 +25,8 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     GEMINI_API_KEY: str | None = None
     RESEND_API_KEY: str | None = None
+    GOOGLE_CLIENT_ID: str | None = None
+    APPLE_CLIENT_ID: str | None = None
+    FRONTEND_URL: str = "http://localhost:3000"
 
 settings = Settings()

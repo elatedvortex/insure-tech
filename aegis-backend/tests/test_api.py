@@ -39,14 +39,17 @@ async def client():
 
 
 async def _login(client: AsyncClient, email: str = "demo@example.com") -> str:
-    otp_res = await client.post("/api/v1/auth/otp/request", json={"email": email})
-    assert otp_res.status_code == 200
-    code = otp_res.json()["dev_code"]
-    verify = await client.post(
-        "/api/v1/auth/otp/verify", json={"email": email, "code": code}
+    res = await client.post(
+        "/api/v1/auth/register",
+        json={"email": email, "password": "correct-password", "name": "Demo User"},
     )
-    assert verify.status_code == 200
-    return verify.json()["access_token"]
+    if res.status_code == 409:
+        res = await client.post(
+            "/api/v1/auth/login",
+            json={"email": email, "password": "correct-password"},
+        )
+    assert res.status_code == 200
+    return res.json()["access_token"]
 
 
 @pytest.mark.asyncio
@@ -58,7 +61,7 @@ async def test_healthz(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_otp_login_and_demo_portfolio(client: AsyncClient):
+async def test_password_login_and_demo_portfolio(client: AsyncClient):
     token = await _login(client)
     headers = {"Authorization": f"Bearer {token}"}
 
@@ -69,6 +72,47 @@ async def test_otp_login_and_demo_portfolio(client: AsyncClient):
     score = await client.get("/api/v1/protection/", headers=headers)
     assert score.status_code == 200
     assert score.json()["overall"] > 0
+
+
+@pytest.mark.asyncio
+async def test_forgot_password_reset_and_login(client: AsyncClient):
+    await client.post(
+        "/api/v1/auth/register",
+        json={"email": "reset@example.com", "password": "old-password"},
+    )
+    forgot = await client.post(
+        "/api/v1/auth/password/forgot",
+        json={"email": "reset@example.com"},
+    )
+    assert forgot.status_code == 200
+    token = forgot.json()["reset_token"]
+    assert token
+
+    reset = await client.post(
+        "/api/v1/auth/password/reset",
+        json={"token": token, "password": "new-password"},
+    )
+    assert reset.status_code == 200
+
+    login = await client.post(
+        "/api/v1/auth/login",
+        json={"email": "reset@example.com", "password": "new-password"},
+    )
+    assert login.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_development_oauth_login_seeds_account_data(client: AsyncClient):
+    login = await client.post(
+        "/api/v1/auth/oauth",
+        json={"provider": "google", "email": "google@example.com", "name": "Google User"},
+    )
+    assert login.status_code == 200
+    headers = {"Authorization": f"Bearer {login.json()['access_token']}"}
+
+    policies = await client.get("/api/v1/policies/", headers=headers)
+    assert policies.status_code == 200
+    assert len(policies.json()) >= 2
 
 
 @pytest.mark.asyncio

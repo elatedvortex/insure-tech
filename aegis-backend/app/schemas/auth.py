@@ -1,13 +1,34 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
-class OtpRequest(BaseModel):
+class EmailPasswordLogin(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=8, max_length=72)
+
+
+class EmailPasswordRegister(EmailPasswordLogin):
+    name: str | None = Field(default=None, max_length=255)
+
+
+class OAuthLogin(BaseModel):
+    provider: str = Field(pattern="^(google|apple)$")
+    id_token: str | None = None
+    email: EmailStr | None = None
+    name: str | None = Field(default=None, max_length=255)
+
+
+class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 
 
-class OtpVerify(BaseModel):
-    email: EmailStr
-    code: str
+class ResetPasswordRequest(BaseModel):
+    token: str = Field(min_length=16)
+    password: str = Field(min_length=8, max_length=72)
+
+
+class MessageResponse(BaseModel):
+    message: str
+    reset_token: str | None = None
 
 
 class TokenResponse(BaseModel):

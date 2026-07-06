@@ -1,8 +1,13 @@
-"""Auth service — OTP-based email authentication."""
+"""Auth service for password, OAuth, refresh-token, and reset-password flows."""
+
 import uuid
 from datetime import datetime, timedelta, timezone
 
+import httpx
 from fastapi import HTTPException, status
+from google.auth.transport import requests as google_requests
+from google.oauth2 import id_token as google_id_token
+from jose import JWTError, jwt
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,13 +15,13 @@ from app.core.config import settings
 from app.core.security import (
     create_access_token,
     create_refresh_token,
-    generate_otp,
-    hash_otp,
+    create_url_token,
+    hash_password,
     hash_token,
-    verify_otp,
+    verify_password,
 )
 from app.models.audit_log import AuditLog
-from app.models.user import OtpCode, RefreshToken, User
+from app.models.user import RefreshToken, User
 
 
 def _utc_now() -> datetime:
@@ -35,162 +40,26 @@ async def _audit(
     user_id: uuid.UUID | None = None,
     meta: dict | None = None,
 ) -> None:
-    """Fire-and-forget audit log entry (errors are swallowed)."""
     try:
         db.add(AuditLog(user_id=user_id, action=action, metadata_json=meta or {}))
     except Exception:
         pass
 
 
-async def send_otp(email: str, db: AsyncSession) -> dict:
-    """Generate and (in production) send an OTP; in dev return it directly."""
-    # --- Rate limiting: enforce resend cooldown ---
-    recent = await db.execute(
-        select(OtpCode)
-        .where(OtpCode.email == email)
-        .order_by(OtpCode.created_at.desc())
-        .limit(1)
-    )
-    last = recent.scalars().first()
-    if last is not None:
-        elapsed = (_utc_now() - _ensure_utc(last.created_at)).total_seconds()
-        if elapsed < settings.OTP_RESEND_COOLDOWN_SECONDS:
-            wait = int(settings.OTP_RESEND_COOLDOWN_SECONDS - elapsed)
-            raise HTTPException(
-                status_code=429,
-                detail=f"Please wait {wait}s before requesting another code",
-            )
-
-    # --- Expire any unconsumed OTPs for this email ---
-    result = await db.execute(
-        select(OtpCode).where(OtpCode.email == email, OtpCode.consumed == False)  # noqa: E712
-    )
-    for old in result.scalars().all():
-        old.consumed = True
-
-    # --- Generate new OTP ---
-    code = generate_otp(settings.OTP_LENGTH)
-    now = _utc_now()
-    otp = OtpCode(
-        email=email,
-        code_hash=hash_otp(code),
-        expires_at=now + timedelta(minutes=settings.OTP_EXPIRE_MINUTES),
-        attempts=0,
-        consumed=False,
-        created_at=now,
-    )
-    db.add(otp)
-
-    await _audit(db, "otp.requested", meta={"email": email})
-    await db.commit()
-
-    # Write OTP to a local file for automated test/login runs (fallback)
-    try:
-        import os
-        workspace_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        with open(os.path.join(workspace_dir, "otp.txt"), "w") as f:
-            f.write(code)
-    except Exception:
-        pass
-
-    # Send the real email using Resend if configured
-    if settings.RESEND_API_KEY:
-        try:
-            import resend
-            resend.api_key = settings.RESEND_API_KEY
-            
-            html_content = f"""
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <h2 style="color: #111827;">Your Aegis Login Code</h2>
-                <p style="color: #4B5563; font-size: 16px;">
-                    Here is your temporary login code. It will expire in {settings.OTP_EXPIRE_MINUTES} minutes.
-                </p>
-                <div style="background-color: #F3F4F6; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;">
-                    <span style="font-size: 32px; font-weight: bold; letter-spacing: 4px; color: #111827;">{code}</span>
-                </div>
-                <p style="color: #9CA3AF; font-size: 14px;">
-                    If you didn't request this code, you can safely ignore this email.
-                </p>
-            </div>
-            """
-            
-            # Note: On the free tier, you can only send emails from onboarding@resend.dev
-            # to the email address you verified on Resend.
-            resend.Emails.send({
-                "from": "Aegis Security <onboarding@resend.dev>",
-                "to": email,
-                "subject": f"{code} is your Aegis verification code",
-                "html": html_content
-            })
-        except Exception as e:
-            import logging
-            logging.error(f"Failed to send Resend email: {e}")
-
-    # For dev we return the code so the frontend can display it.
-    dev_hint = code if settings.ENVIRONMENT == "development" else None
-    return {"message": "OTP sent", "dev_code": dev_hint}
+async def _get_user_by_email(email: str, db: AsyncSession) -> User | None:
+    result = await db.execute(select(User).where(User.email == email.lower()))
+    return result.scalar_one_or_none()
 
 
-async def verify_otp_and_login(email: str, code: str, db: AsyncSession) -> dict:
-    """Verify OTP, upsert user, return token pair."""
-    result = await db.execute(
-        select(OtpCode)
-        .where(OtpCode.email == email, OtpCode.consumed == False)  # noqa: E712
-        .order_by(OtpCode.created_at.desc())
-    )
-    otp_record = result.scalars().first()
-
-    if otp_record is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No active OTP for this email. Please request a new one.",
-        )
-
-    if _utc_now() > _ensure_utc(otp_record.expires_at):
-        otp_record.consumed = True
-        await db.commit()
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="OTP has expired. Please request a new code.",
-        )
-
-    if otp_record.attempts >= settings.OTP_MAX_ATTEMPTS:
-        otp_record.consumed = True
-        await db.commit()
-        raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail="Too many failed attempts. Please request a new code.",
-        )
-
-    otp_record.attempts += 1
-
-    if not verify_otp(code, otp_record.code_hash):
-        remaining = settings.OTP_MAX_ATTEMPTS - otp_record.attempts
-        await db.commit()
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid code. {remaining} attempt{'s' if remaining != 1 else ''} remaining.",
-        )
-
-    otp_record.consumed = True
-
-    # --- Upsert user ---
+async def _seed_if_needed(user: User, db: AsyncSession) -> None:
     from app.services import onboarding_service
 
-    user_result = await db.execute(select(User).where(User.email == email))
-    user = user_result.scalar_one_or_none()
-    is_new_user = user is None
-
-    if is_new_user:
-        user = User(email=email, is_active=True)
-        db.add(user)
-        await db.flush()
-
-    # Always seed demo data if the user has no policies yet
-    # (handles the case of returning users after a DB wipe)
     await onboarding_service.seed_demo_data_if_empty(user.id, db)
 
-    # --- Issue tokens ---
+
+async def _issue_tokens(user: User, db: AsyncSession, action: str, meta: dict | None = None) -> dict:
+    await _seed_if_needed(user, db)
+
     access_token = create_access_token(str(user.id))
     raw_refresh = create_refresh_token()
     now = _utc_now()
@@ -203,15 +72,8 @@ async def verify_otp_and_login(email: str, code: str, db: AsyncSession) -> dict:
             created_at=now,
         )
     )
-
-    await _audit(
-        db,
-        "auth.login" if not is_new_user else "auth.signup",
-        user_id=user.id,
-        meta={"email": email},
-    )
+    await _audit(db, action, user_id=user.id, meta=meta)
     await db.commit()
-
     return {
         "access_token": access_token,
         "refresh_token": raw_refresh,
@@ -219,8 +81,222 @@ async def verify_otp_and_login(email: str, code: str, db: AsyncSession) -> dict:
     }
 
 
+async def register_with_password(
+    email: str,
+    password: str,
+    name: str | None,
+    db: AsyncSession,
+) -> dict:
+    normalized = email.lower()
+    user = await _get_user_by_email(normalized, db)
+
+    if user and user.password_hash:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="An account already exists for this email. Please sign in.",
+        )
+
+    if user is None:
+        user = User(email=normalized, name=name, is_active=True)
+        db.add(user)
+    else:
+        user.name = name or user.name
+
+    user.password_hash = hash_password(password)
+    user.is_active = True
+    user.reset_token_hash = None
+    user.reset_token_expires_at = None
+    await db.flush()
+    return await _issue_tokens(user, db, "auth.signup", {"email": normalized, "method": "password"})
+
+
+async def login_with_password(email: str, password: str, db: AsyncSession) -> dict:
+    normalized = email.lower()
+    user = await _get_user_by_email(normalized, db)
+
+    if user is None or not user.password_hash or not verify_password(password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password.",
+        )
+
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This account is disabled.",
+        )
+
+    return await _issue_tokens(user, db, "auth.login", {"email": normalized, "method": "password"})
+
+
+def _verify_google_token(raw_id_token: str) -> dict:
+    if not settings.GOOGLE_CLIENT_ID:
+        raise HTTPException(
+            status_code=status.HTTP_501_NOT_IMPLEMENTED,
+            detail="Google sign-in needs GOOGLE_CLIENT_ID configured.",
+        )
+    try:
+        payload = google_id_token.verify_oauth2_token(
+            raw_id_token,
+            google_requests.Request(),
+            settings.GOOGLE_CLIENT_ID,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Google token.") from exc
+
+    email = payload.get("email")
+    if not email or not payload.get("email_verified"):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Google email is not verified.")
+    return {
+        "email": email,
+        "subject": payload.get("sub"),
+        "name": payload.get("name"),
+    }
+
+
+async def _verify_apple_token(raw_id_token: str) -> dict:
+    if not settings.APPLE_CLIENT_ID:
+        raise HTTPException(
+            status_code=status.HTTP_501_NOT_IMPLEMENTED,
+            detail="Apple sign-in needs APPLE_CLIENT_ID configured.",
+        )
+
+    try:
+        header = jwt.get_unverified_header(raw_id_token)
+        async with httpx.AsyncClient(timeout=10) as client:
+            response = await client.get("https://appleid.apple.com/auth/keys")
+            response.raise_for_status()
+        keys = response.json()["keys"]
+        key = next((item for item in keys if item.get("kid") == header.get("kid")), None)
+        if key is None:
+            raise JWTError("matching Apple key not found")
+        payload = jwt.decode(
+            raw_id_token,
+            key,
+            algorithms=[header.get("alg", "RS256")],
+            audience=settings.APPLE_CLIENT_ID,
+            issuer="https://appleid.apple.com",
+        )
+    except (httpx.HTTPError, KeyError, JWTError) as exc:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Apple token.") from exc
+
+    email = payload.get("email")
+    if not email:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Apple token did not include an email.")
+    return {
+        "email": email,
+        "subject": payload.get("sub"),
+        "name": None,
+    }
+
+
+async def login_with_oauth(
+    provider: str,
+    db: AsyncSession,
+    id_token: str | None = None,
+    email: str | None = None,
+    name: str | None = None,
+) -> dict:
+    provider = provider.lower()
+    if provider not in {"google", "apple"}:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported OAuth provider.")
+
+    if id_token:
+        profile = _verify_google_token(id_token) if provider == "google" else await _verify_apple_token(id_token)
+    elif settings.ENVIRONMENT == "development" and email:
+        profile = {"email": email, "subject": f"dev-{provider}:{email.lower()}", "name": name}
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"{provider.title()} sign-in requires an identity token.",
+        )
+
+    normalized = profile["email"].lower()
+    user = await _get_user_by_email(normalized, db)
+    is_new_user = user is None
+
+    if is_new_user:
+        user = User(
+            email=normalized,
+            name=profile.get("name") or name,
+            oauth_provider=provider,
+            oauth_subject=profile.get("subject"),
+            is_active=True,
+        )
+        db.add(user)
+    else:
+        user.name = user.name or profile.get("name") or name
+        user.oauth_provider = provider
+        user.oauth_subject = profile.get("subject")
+        user.is_active = True
+
+    await db.flush()
+    return await _issue_tokens(
+        user,
+        db,
+        "auth.signup" if is_new_user else "auth.login",
+        {"email": normalized, "method": provider},
+    )
+
+
+async def request_password_reset(email: str, db: AsyncSession) -> dict:
+    normalized = email.lower()
+    user = await _get_user_by_email(normalized, db)
+    raw_token: str | None = None
+
+    if user is not None:
+        raw_token = create_url_token()
+        user.reset_token_hash = hash_token(raw_token)
+        user.reset_token_expires_at = _utc_now() + timedelta(minutes=settings.PASSWORD_RESET_EXPIRE_MINUTES)
+        await _audit(db, "auth.password_reset_requested", user_id=user.id, meta={"email": normalized})
+        await db.commit()
+
+        if settings.RESEND_API_KEY:
+            try:
+                import resend
+
+                resend.api_key = settings.RESEND_API_KEY
+                reset_url = f"{settings.FRONTEND_URL.rstrip('/')}/login?reset={raw_token}"
+                resend.Emails.send(
+                    {
+                        "from": "Aegis Security <onboarding@resend.dev>",
+                        "to": normalized,
+                        "subject": "Reset your Aegis password",
+                        "html": f"<p>Use this secure link to reset your password:</p><p><a href=\"{reset_url}\">Reset password</a></p>",
+                    }
+                )
+            except Exception:
+                pass
+    else:
+        await db.commit()
+
+    return {
+        "message": "If that email exists, a password reset link has been sent.",
+        "reset_token": raw_token if settings.ENVIRONMENT == "development" else None,
+    }
+
+
+async def reset_password(raw_token: str, password: str, db: AsyncSession) -> dict:
+    token_hash = hash_token(raw_token)
+    result = await db.execute(select(User).where(User.reset_token_hash == token_hash))
+    user = result.scalar_one_or_none()
+
+    if user is None or not user.reset_token_expires_at or _utc_now() > _ensure_utc(user.reset_token_expires_at):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Reset link is invalid or expired.",
+        )
+
+    user.password_hash = hash_password(password)
+    user.reset_token_hash = None
+    user.reset_token_expires_at = None
+    user.is_active = True
+    await _audit(db, "auth.password_reset_completed", user_id=user.id)
+    await db.commit()
+    return {"message": "Password updated. You can sign in now."}
+
+
 async def refresh_access_token(raw_refresh: str, db: AsyncSession) -> dict:
-    """Exchange a valid refresh token for a new access + refresh token pair."""
     token_hash = hash_token(raw_refresh)
     result = await db.execute(
         select(RefreshToken).where(
@@ -236,7 +312,6 @@ async def refresh_access_token(raw_refresh: str, db: AsyncSession) -> dict:
             detail="Invalid or expired refresh token. Please log in again.",
         )
 
-    # Rotate: revoke old, issue new pair
     record.revoked = True
     user_id = record.user_id
     new_access = create_access_token(str(user_id))
@@ -263,11 +338,8 @@ async def refresh_access_token(raw_refresh: str, db: AsyncSession) -> dict:
 
 
 async def logout(raw_refresh: str, db: AsyncSession) -> None:
-    """Revoke a refresh token."""
     token_hash = hash_token(raw_refresh)
-    result = await db.execute(
-        select(RefreshToken).where(RefreshToken.token_hash == token_hash)
-    )
+    result = await db.execute(select(RefreshToken).where(RefreshToken.token_hash == token_hash))
     record = result.scalar_one_or_none()
     if record:
         record.revoked = True

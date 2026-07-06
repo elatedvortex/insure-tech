@@ -166,13 +166,25 @@ export const api = {
 
 // Auth
 export const authApi = {
-  requestOtp: (email: string) =>
-    api.post<{ message: string; dev_code?: string }>("/api/v1/auth/otp/request", { email }),
-  verifyOtp: (email: string, code: string) =>
+  register: (email: string, password: string, name?: string) =>
     api.post<{ access_token: string; refresh_token: string; token_type: string }>(
-      "/api/v1/auth/otp/verify",
-      { email, code },
+      "/api/v1/auth/register",
+      { email, password, name },
     ),
+  login: (email: string, password: string) =>
+    api.post<{ access_token: string; refresh_token: string; token_type: string }>(
+      "/api/v1/auth/login",
+      { email, password },
+    ),
+  oauth: (provider: "google" | "apple", data: { id_token?: string; email?: string; name?: string }) =>
+    api.post<{ access_token: string; refresh_token: string; token_type: string }>(
+      "/api/v1/auth/oauth",
+      { provider, ...data },
+    ),
+  forgotPassword: (email: string) =>
+    api.post<{ message: string; reset_token?: string }>("/api/v1/auth/password/forgot", { email }),
+  resetPassword: (token: string, password: string) =>
+    api.post<{ message: string }>("/api/v1/auth/password/reset", { token, password }),
   logout: (refresh_token: string) =>
     api.post<void>("/api/v1/auth/logout", { refresh_token }),
 };

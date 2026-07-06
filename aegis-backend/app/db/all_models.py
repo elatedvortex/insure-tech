@@ -11,4 +11,4 @@ from app.models.notification import Notification  # noqa: F401
 from app.models.policy import Policy  # noqa: F401
 from app.models.protection_score import ProtectionScore, RiskProfile  # noqa: F401
 from app.models.recommendation import Recommendation  # noqa: F401
-from app.models.user import OtpCode, RefreshToken, User  # noqa: F401
+from app.models.user import RefreshToken, User  # noqa: F401
