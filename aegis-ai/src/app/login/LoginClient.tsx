@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, Eye, EyeOff, KeyRound, Mail } from "lucide-react";
@@ -10,6 +10,10 @@ import { Presence } from "@/components/Presence";
 import { authApi, ApiError, tokens } from "@/lib/api";
 
 type Mode = "signin" | "signup" | "forgot" | "reset";
+
+type GoogleCredentialResponse = {
+  credential?: string;
+};
 
 export default function LoginPage() {
   const router = useRouter();
@@ -28,6 +32,44 @@ export default function LoginPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [devResetToken, setDevResetToken] = useState<string | null>(resetToken || null);
+  const [googleLoaded, setGoogleLoaded] = useState(false);
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+
+  useEffect(() => {
+    if (typeof window === "undefined" || googleLoaded) return;
+
+    const existing = document.querySelector(
+      'script[src="https://accounts.google.com/gsi/client"]',
+    ) as HTMLScriptElement | null;
+
+    if (existing) {
+      if ((window as any).google?.accounts?.id) {
+        setGoogleLoaded(true);
+      } else {
+        existing.addEventListener("load", () => {
+          if ((window as any).google?.accounts?.id) {
+            setGoogleLoaded(true);
+          }
+        });
+      }
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      if ((window as any).google?.accounts?.id) {
+        setGoogleLoaded(true);
+      }
+    };
+    document.body.appendChild(script);
+
+    return () => {
+      script.remove();
+    };
+  }, [googleLoaded]);
 
   const title = useMemo(() => {
     if (mode === "signup") return "Create your Aegis account.";
@@ -82,11 +124,65 @@ export default function LoginPage() {
     setMessage(null);
 
     try {
-      const data = await authApi.oauth(provider, {
-        email: trimmed || `${provider}.account@example.com`,
-        name: name.trim() || undefined,
-      });
-      completeLogin(data);
+      if (provider === "google") {
+        if (!googleClientId) {
+          throw new Error("Google sign-in is not configured. Set NEXT_PUBLIC_GOOGLE_CLIENT_ID.");
+        }
+
+        if (!googleLoaded || !(window as any).google?.accounts?.id) {
+          throw new Error("Google Identity Services is not ready yet.");
+        }
+
+        const credential = await new Promise<string>((resolve, reject) => {
+          let settled = false;
+          const timeout = window.setTimeout(() => {
+            if (!settled) {
+              settled = true;
+              reject(new Error("Google sign-in timed out."));
+            }
+          }, 15000);
+
+          (window as any).google.accounts.id.initialize({
+            client_id: googleClientId,
+            callback: (response: GoogleCredentialResponse) => {
+              if (settled) return;
+              if (response?.credential) {
+                settled = true;
+                window.clearTimeout(timeout);
+                resolve(response.credential);
+              }
+            },
+            ux_mode: "popup",
+          });
+
+          (window as any).google.accounts.id.prompt((notification: any) => {
+            if (settled) return;
+            const blocked =
+              (typeof notification.isNotDisplayed === "function" && notification.isNotDisplayed()) ||
+              (typeof notification.isSkippedMoment === "function" && notification.isSkippedMoment()) ||
+              (typeof notification.isDismissedMoment === "function" && notification.isDismissedMoment());
+
+            if (blocked) {
+              settled = true;
+              window.clearTimeout(timeout);
+              reject(new Error("Google sign-in was cancelled or blocked."));
+            }
+          });
+        });
+
+        const data = await authApi.oauth(provider, {
+          id_token: credential,
+          email: trimmed || undefined,
+          name: name.trim() || undefined,
+        });
+        completeLogin(data);
+      } else {
+        const data = await authApi.oauth(provider, {
+          email: trimmed || `${provider}.account@example.com`,
+          name: name.trim() || undefined,
+        });
+        completeLogin(data);
+      }
     } catch (e) {
       handleError(
         e,
