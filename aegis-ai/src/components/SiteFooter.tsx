@@ -6,11 +6,11 @@ export default function SiteFooter() {
       <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-4 gap-6">
         <div className="space-y-3">
           <h4 className="font-display text-sm">Designed for Social Impact</h4>
-          <p className="text-sm text-ink-soft">Lemonade Inc. is a Public Benefit Corporation and certified B-Corp. Social impact is part of our legal mission and business model - not just marketing fluff</p>
+          <p className="text-sm text-ink-soft">Aegis Inc. is a Public Benefit Corporation and certified B-Corp. Social impact is part of our legal mission and business model - not just marketing fluff</p>
 
           <div className="flex items-center gap-3 mt-3">
             <img src="https://marketing-edge-assets.lemonade.com/cdn-cgi/image/width=256,quality=75,format=auto,onerror=redirect/_next/static/media/nyse.b055bec6.png" alt="NYSE:LMND" className="h-6" />
-            <div className="text-sm text-ink-soft">NYSE:LMND — Lemonade is listed on the New York Stock Exchange under the LMND symbol</div>
+            <div className="text-sm text-ink-soft">NYSE:LMND — Aegis is listed on the New York Stock Exchange under the LMND symbol</div>
           </div>
 
           <div className="flex items-center gap-3 mt-3">
@@ -76,17 +76,17 @@ export default function SiteFooter() {
         </div>
 
         <div className="text-sm text-ink-soft text-center sm:text-right">
-          <div>1-844-733-8666 • <a href="mailto:help@lemonade.com" className="underline">help@lemonade.com</a></div>
-          <div className="mt-2">Lemonade Insurance, 5 Crosby St. 3rd floor, New York, NY 10013</div>
+          <div>1-844-733-8666 • <a href="mailto:help@aegis.com" className="underline">help@aegis.com</a></div>
+          <div className="mt-2">Aegis Insurance, 5 Crosby St. 3rd floor, New York, NY 10013</div>
         </div>
       </div>
 
       <div className="max-w-6xl mx-auto mt-6 text-[11px] text-ink-soft leading-relaxed">
         <p>
-          Property and casualty insurance is provided by Lemonade Insurance Company (LIC) and Metromile Insurance Company (MIC), 5 Crosby St., 3rd floor, New York, NY 10013. Home insurance policies in certain states are underwritten by member companies of Homesite Group, Inc. Coverage is subject to policy terms and may not be available in all states.
+          Property and casualty insurance is provided by Aegis Insurance Company (AIC) and Metromile Insurance Company (MIC), 5 Crosby St., 3rd floor, New York, NY 10013. Home insurance policies in certain states are underwritten by member companies of Homesite Group, Inc. Coverage is subject to policy terms and may not be available in all states.
         </p>
         <p className="mt-2">
-          Lemonade Insurance Agency, LLC (LIA) and Metromile Insurance Services LLC (MIS) are licensed insurance agents and appointed by LIC and MIC and both LIA and MIS receive compensation based on the premiums for the insurance policies each sells. Further information is available upon request.
+          Aegis Insurance Agency, LLC (AIA) and Metromile Insurance Services LLC (MIS) are licensed insurance agents and appointed by AIC and MIC and both AIA and MIS receive compensation based on the premiums for the insurance policies each sells. Further information is available upon request.
         </p>
       </div>
     </footer>
