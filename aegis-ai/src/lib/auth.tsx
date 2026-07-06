@@ -79,7 +79,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       tokens.clear();
       setUser(null);
-      router.push("/login");
+      const dest = "/login";
+      await router.push(dest);
+      if (typeof window !== "undefined") {
+        // give the router a tiny moment, then force a full reload so UI and
+        // server-side protections see the cleared cookie/localStorage state.
+        setTimeout(() => window.location.replace(dest), 50);
+      }
     }
   }, [router]);
 

@@ -83,7 +83,14 @@ export default function LoginPage() {
   async function completeLogin(data: { access_token: string; refresh_token: string }) {
     tokens.set(data.access_token, data.refresh_token);
     await refreshUser();
-    router.replace(nextPath.startsWith("/") ? nextPath : "/dashboard");
+    const dest = nextPath.startsWith("/") ? nextPath : "/dashboard";
+    // Navigate client-side then force a full page reload so server-side
+    // middleware and cookie-based protection see the updated auth state.
+    await router.replace(dest);
+    if (typeof window !== "undefined") {
+      // small timeout to ensure navigation completes in Next.js before reload
+      setTimeout(() => window.location.replace(dest), 50);
+    }
   }
 
   function handleError(e: unknown, fallback: string) {
