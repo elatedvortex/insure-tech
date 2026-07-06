@@ -31,10 +31,7 @@ export default function Home() {
         <FAQSection />
         <ClosingCTA />
       </main>
-      <footer className="px-6 py-10 border-t border-surface-line/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-sage">
-        <span>© 2026 Aegis. Not a substitute for professional advice in a crisis.</span>
-        <span className="font-mono text-xs">Prototype build</span>
-      </footer>
+      
     </>
   );
 }

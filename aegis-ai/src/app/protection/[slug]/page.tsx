@@ -40,9 +40,7 @@ export default async function CategoryPage({
         <CategoryFAQ faqs={category.faqs} />
         <CategoryCTA label={category.label} prompt={category.heroPrompt} />
       </main>
-      <footer className="px-6 py-10 border-t border-surface-line/60 text-center text-[11px] text-sage font-mono">
-        Prototype build
-      </footer>
+      
     </>
   );
 }

@@ -107,9 +107,7 @@ export default function DashboardPage() {
 
         <QuickAsk />
       </main>
-      <footer className="px-6 py-10 mt-6 text-center text-[11px] text-sage font-mono">
-        Aegis — AI-native insurance
-      </footer>
+      
     </>
   );
 }
