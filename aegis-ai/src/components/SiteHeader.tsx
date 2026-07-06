@@ -65,9 +65,9 @@ export function SiteHeader({ showLogin = false }: { showLogin?: boolean }) {
           : "bg-transparent border-b border-transparent"
       }`}
     >
-      <div className="absolute inset-x-0 top-full h-px bg-gradient-to-r from-transparent via-surface-line/70 to-transparent" />
+      <div className="absolute inset-x-0 top-full h-px bg-linear-to-r from-transparent via-surface-line/70 to-transparent" />
       <motion.div
-        className="absolute inset-x-0 top-0 h-[2px] origin-left bg-gradient-to-r from-pine via-pine-bright to-clay"
+        className="absolute inset-x-0 top-0 h-[2px] origin-left bg-linear-to-r from-pine via-pine-bright to-clay"
         style={{ scaleX: scrollProgress }}
       />
 

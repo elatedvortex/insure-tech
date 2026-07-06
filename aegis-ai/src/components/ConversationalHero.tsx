@@ -97,19 +97,19 @@ export function ConversationalHero() {
         transition={reduced ? { duration: 0.01 } : { type: "spring", stiffness: 90, damping: 18, delay: 0.08 }}
         className="font-display text-[clamp(2.6rem,7vw,5.5rem)] font-semibold tracking-tight text-center leading-[1.04] max-w-4xl"
       >
-        <span className="bg-clip-text text-transparent bg-gradient-to-br from-ink via-ink to-ink-soft">
+        <span className="bg-clip-text text-transparent bg-linear-to-br from-ink via-ink to-ink-soft">
           Insurance that thinks
         </span>
         <br />
         <span className="relative inline-block">
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-pine via-pine-bright to-pine">
+          <span className="bg-clip-text text-transparent bg-linear-to-r from-pine via-pine-bright to-pine">
             before you do.
           </span>
           <motion.span
             initial={reduced ? false : { scaleX: 0 }}
             animate={{ scaleX: 1 }}
             transition={reduced ? { duration: 0.01 } : { delay: 0.6, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute -bottom-1 left-0 right-0 h-[3px] rounded-full bg-gradient-to-r from-pine/60 via-pine to-pine/60 origin-left"
+            className="absolute -bottom-1 left-0 right-0 h-[3px] rounded-full bg-linear-to-r from-pine/60 via-pine to-pine/60 origin-left"
           />
         </span>
       </motion.h1>
@@ -122,6 +122,32 @@ export function ConversationalHero() {
       >
         Ask in plain language. Get honest, personalised coverage guidance — no forms, no jargon.
       </motion.p>
+
+      <motion.div
+        initial={reduced ? false : { opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={reduced ? { duration: 0.01 } : { delay: 0.28 }}
+        className="mt-8 flex items-center gap-4 justify-center"
+      >
+        <button
+          onClick={() => router.push("/advisor")}
+          className="btn-primary text-base px-6 py-3"
+          aria-label="Talk to Aegis"
+        >
+          Talk to Aegis — Try it now
+        </button>
+
+        <button
+          onClick={() => {
+            const sample = PROMPTS[0];
+            setValue(sample);
+            go(sample);
+          }}
+          className="text-sm text-sage hover:text-pine"
+        >
+          Try an example
+        </button>
+      </motion.div>
 
       <motion.div
         initial={reduced ? false : { opacity: 0, y: 28, scale: 0.96 }}

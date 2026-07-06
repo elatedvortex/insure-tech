@@ -55,7 +55,7 @@ export function HowItWorks() {
             whileHover={reduced ? undefined : { y: -6, scale: 1.01, rotate: -0.6 }}
             className="group relative overflow-hidden rounded-[28px] border border-surface-line/70 bg-surface/70 p-7 shadow-[0_16px_50px_-24px_rgba(2,6,23,0.18)] backdrop-blur-xl"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-pine/8 via-transparent to-clay/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+            <div className="absolute inset-0 bg-linear-to-br from-pine/8 via-transparent to-clay/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
             <div className="relative">
               <div className="w-8 h-8 rounded-full border border-pine/40 flex items-center justify-center mb-4">
                 <div className="w-1.5 h-1.5 rounded-full bg-pine" />
@@ -89,7 +89,7 @@ export function ProtectionCategories() {
             onClick={() => router.push(`/protection/${c.slug}`)}
             className="group relative overflow-hidden text-left p-6 rounded-[24px] premium-surface border border-surface-line/70 transition-all duration-300 hover:border-pine/40"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-pine/8 via-transparent to-clay/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+            <div className="absolute inset-0 bg-linear-to-br from-pine/8 via-transparent to-clay/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
             <div className="relative">
               <c.icon className="w-5 h-5 text-pine mb-6" strokeWidth={1.5} />
               <div className="font-display text-lg text-ink">{c.label}</div>

@@ -261,21 +261,21 @@ export default function LoginPage() {
 
           <form onSubmit={submit} className="flex flex-col gap-3">
             {mode === "signup" && (
-              <div className="rounded-full border border-surface-line bg-surface/60 flex items-center px-5 py-1.5 focus-within:border-pine transition-colors">
+              <div>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Name"
                   disabled={loading}
-                  className="flex-1 bg-transparent text-sm py-2 placeholder:text-sage/70 focus:outline-none disabled:opacity-50"
+                  className="form-input text-sm placeholder:text-sage/70 disabled:opacity-50"
                 />
               </div>
             )}
 
             {mode !== "reset" && (
-              <div className="rounded-full border border-surface-line bg-surface/60 flex items-center gap-2 px-5 py-1.5 focus-within:border-pine transition-colors">
-                <Mail className="w-4 h-4 text-sage" />
+              <div>
+                <label className="sr-only">Email</label>
                 <input
                   type="email"
                   value={email}
@@ -283,14 +283,13 @@ export default function LoginPage() {
                   placeholder="you@email.com"
                   disabled={loading}
                   required
-                  className="flex-1 bg-transparent text-sm py-2 placeholder:text-sage/70 focus:outline-none disabled:opacity-50"
+                  className="form-input text-sm placeholder:text-sage/70 disabled:opacity-50"
                 />
               </div>
             )}
 
             {!passwordDisabled && (
-              <div className="rounded-full border border-surface-line bg-surface/60 flex items-center gap-2 pl-5 pr-2 py-1.5 focus-within:border-pine transition-colors">
-                <KeyRound className="w-4 h-4 text-sage" />
+              <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
@@ -299,13 +298,13 @@ export default function LoginPage() {
                   disabled={loading}
                   minLength={8}
                   required
-                  className="flex-1 bg-transparent text-sm py-2 placeholder:text-sage/70 focus:outline-none disabled:opacity-50"
+                  className="form-input text-sm placeholder:text-sage/70 disabled:opacity-50 pr-10"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((value) => !value)}
                   aria-label={showPassword ? "Hide password" : "Show password"}
-                  className="w-9 h-9 rounded-full text-sage hover:text-pine flex items-center justify-center shrink-0"
+                  className="absolute top-1/2 right-2 -translate-y-1/2 w-9 h-9 rounded-full text-sage hover:text-pine flex items-center justify-center"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -315,10 +314,12 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading || (mode !== "reset" && !email.trim()) || (!passwordDisabled && password.length < 8)}
-              className="mt-1 w-full h-12 rounded-full bg-pine text-paper text-sm font-medium flex items-center justify-center gap-2 transition-transform hover:scale-[1.01] active:scale-[0.99] disabled:opacity-40 disabled:hover:scale-100"
+              className="mt-3 w-full btn-primary"
             >
-              {primaryText}
-              <ArrowRight className="w-4 h-4" />
+              <span className="flex items-center justify-center gap-2">
+                {primaryText}
+                <ArrowRight className="w-4 h-4" />
+              </span>
             </button>
           </form>
 

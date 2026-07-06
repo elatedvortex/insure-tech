@@ -32,8 +32,9 @@ export function OAuthButton({
       onClick={onClick}
       disabled={loading}
       className={cn(
-        "w-full flex items-center justify-center gap-2.5 rounded-full border border-surface-line bg-paper px-5 py-3 text-sm font-medium text-ink transition-colors hover:border-pine disabled:opacity-60"
-      )}
+          "w-full flex items-center justify-center gap-2.5 px-5 py-3 text-sm font-medium transition-colors disabled:opacity-60",
+          provider === "Google" ? "btn-primary" : "rounded-full border border-surface-line bg-paper text-ink"
+        )}
     >
       {ICONS[provider]}
       Continue with {provider}
