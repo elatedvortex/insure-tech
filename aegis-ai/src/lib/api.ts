@@ -7,7 +7,9 @@
  * • Exports typed helpers for every backend domain
  */
 
-const BASE = process.env.NEXT_PUBLIC_API_URL;
+const BASE =
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ||
+  "https://insure-tech-cnqk.onrender.com";
 
 const AUTH_TOKEN_PATHS = [
   "/api/v1/auth/login",
