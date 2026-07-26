@@ -32,7 +32,7 @@ export function CoveragePanel({
         <p className="text-xs text-ink-soft">
           No policies yet.{" "}
           <Link href="/advisor?q=What insurance do I need?" className="text-pine">
-            Ask Aegis
+            Ask BestPolicy
           </Link>
         </p>
       ) : (

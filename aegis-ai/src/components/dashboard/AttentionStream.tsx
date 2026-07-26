@@ -54,7 +54,7 @@ export function AttentionStream({
       <div className="rounded-2xl border border-surface-line bg-surface/30 p-6 text-center">
         <p className="text-sm text-ink-soft">Nothing needs your attention right now.</p>
         <Link href="/advisor" className="inline-block text-sm text-pine font-medium mt-2">
-          Ask Aegis anything →
+          Ask BestPolicy anything →
         </Link>
       </div>
     );

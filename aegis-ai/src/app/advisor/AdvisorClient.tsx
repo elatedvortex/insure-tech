@@ -81,9 +81,9 @@ export default function AdvisorClient() {
       setMessages([
         makeMessage(
           "assistant",
-          "Hi — I'm Aegis. Tell me what's going on and I'll take it from there.",
+          "Hi — I'm BestPolicy. Tell me what you'd like to protect and I'll find the best plan for you.",
           undefined,
-          ["I bought a car", "I need health insurance", "Check my protection score"],
+          ["I need health insurance", "Compare motor plans", "I want life insurance"],
         ),
       ]);
       if (initialQuery) sendMessageLocal(initialQuery);
@@ -262,7 +262,7 @@ export default function AdvisorClient() {
         </button>
         <Presence size="sm" active={thinking || streaming} />
         <div>
-          <p className="font-display text-base text-ink leading-none">Aegis</p>
+          <p className="font-display text-base text-ink leading-none">BestPolicy</p>
           <p className="text-[11px] text-sage mt-0.5">
             {thinking ? "Thinking…" : streaming ? "Responding…" : "Your protection advisor"}
           </p>

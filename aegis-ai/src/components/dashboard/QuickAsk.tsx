@@ -22,7 +22,7 @@ export function QuickAsk() {
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && go()}
-          placeholder="Ask Aegis anything..."
+          placeholder="Ask BestPolicy anything..."
           className="flex-1 bg-transparent text-sm py-2 placeholder:text-sage/70 focus:outline-none"
         />
         <button

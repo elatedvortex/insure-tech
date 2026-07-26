@@ -74,7 +74,7 @@ export default function LoginPage() {
   }, [googleLoaded]);
 
   const title = useMemo(() => {
-    if (mode === "signup") return "Create your Aegis account.";
+    if (mode === "signup") return "Create your BestPolicy account.";
     if (mode === "forgot") return "Reset your password.";
     if (mode === "reset") return "Choose a new password.";
     return "Welcome back.";
@@ -397,7 +397,7 @@ export default function LoginPage() {
           </div>
 
           <p className="text-[11px] text-sage text-center mt-8 leading-relaxed">
-            By continuing, you agree to Aegis&apos;s Terms and Privacy Policy.
+            By continuing, you agree to BestPolicy&apos;s Terms and Privacy Policy.
             <br />
             Your account data is scoped to the identity you sign in with.
           </p>

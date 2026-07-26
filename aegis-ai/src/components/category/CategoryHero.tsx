@@ -57,7 +57,7 @@ export function CategoryHero({ category }: { category: CategoryConfig }) {
             onClick={() => router.push(`/advisor?q=${encodeURIComponent(category.heroPrompt)}`)}
             className="px-7 py-3.5 rounded-full bg-pine text-paper font-medium hover:bg-pine-deep transition-colors"
           >
-            Get a quote from Aegis
+            Get a quote from BestPolicy
           </button>
           <button
             onClick={() =>

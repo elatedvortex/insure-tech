@@ -2,28 +2,23 @@
 
 import { useEffect } from "react";
 import { motion, useScroll, useSpring, useTransform, useMotionValue, MotionValue } from "framer-motion";
-import { usePetState } from "./PetStateProvider";
 
+/**
+ * BestPolicy mascot background — a child peeking from below (scrolls up)
+ * and a small car floating in the bottom-right corner.
+ */
 export function DogBackground() {
-  const { isCat } = usePetState();
-
-  // Always start at 0 — SSR safe, no window reads at render time
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
-  // Scroll-driven rise
   const { scrollYProgress } = useScroll();
-  const scrollY = useTransform(scrollYProgress, [0, 0.35], [0, -280]);
+  const scrollY      = useTransform(scrollYProgress, [0, 0.35], [0, -260]);
+  const carScrollY   = useTransform(scrollYProgress, [0, 0.35], [0, -120]);
 
   useEffect(() => {
-    // Set to screen centre once mounted so eyes start looking forward
     mouseX.set(window.innerWidth / 2);
     mouseY.set(window.innerHeight / 2);
-
-    const onMove = (e: MouseEvent) => {
-      mouseX.set(e.clientX);
-      mouseY.set(e.clientY);
-    };
+    const onMove = (e: MouseEvent) => { mouseX.set(e.clientX); mouseY.set(e.clientY); };
     window.addEventListener("mousemove", onMove);
     return () => window.removeEventListener("mousemove", onMove);
   }, [mouseX, mouseY]);
@@ -32,188 +27,127 @@ export function DogBackground() {
   const smX = useSpring(mouseX, springCfg);
   const smY = useSpring(mouseY, springCfg);
 
-  const glowColor = isCat ? "rgba(249,115,22,0.28)" : "rgba(16,185,129,0.28)";
-
-  // Use a fixed generous range — no window reads during render
-  const pupilDx = useTransform(smX, [0, 2000], [-7, 7]);
-  const pupilDy = useTransform(smY, [0, 1200], [-5, 5]);
+  const eyeDx = useTransform(smX, [0, 2000], [-6, 6]);
+  const eyeDy = useTransform(smY, [0, 1200], [-4, 4]);
 
   return (
-    <div
-      aria-hidden
-      className="pointer-events-none fixed inset-0 -z-10"
-    >
-      {/* Soft radial glow behind pet */}
+    <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
+      {/* Soft glow behind child */}
       <div
-        className="absolute bottom-0 right-0 w-[700px] h-[700px] rounded-full opacity-[0.12] translate-x-1/4 translate-y-1/4 pointer-events-none"
-        style={{ background: `radial-gradient(circle, ${glowColor} 0%, transparent 68%)` }}
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full opacity-[0.09] pointer-events-none"
+        style={{ background: "radial-gradient(circle, rgba(252,128,25,0.45) 0%, transparent 68%)" }}
       />
 
-      {/* Pet — starts peeking from below, rises as you scroll */}
+      {/* Child — peeks up from below, rises on scroll */}
       <motion.div
         className="absolute left-1/2 -translate-x-1/2"
-        style={{ bottom: "-200px", y: scrollY }}
+        style={{ bottom: "-210px", y: scrollY }}
       >
-        {isCat ? <CatSVG pupilDx={pupilDx} pupilDy={pupilDy} /> : <DogSVG pupilDx={pupilDx} pupilDy={pupilDy} />}
-        <div className="mt-2 text-center text-[11px] uppercase tracking-[0.15em] text-sage/80">
-          {isCat ? "Cat mode" : "Dog mode"}
+        <ChildSVG eyeDx={eyeDx} eyeDy={eyeDy} />
+        <div className="mt-2 text-center text-[11px] uppercase tracking-[0.15em] text-sage/70">
+          BestPolicy
         </div>
+      </motion.div>
+
+      {/* Small car — bottom right, floats up slightly on scroll */}
+      <motion.div
+        className="absolute right-8 sm:right-16"
+        style={{ bottom: "-60px", y: carScrollY }}
+      >
+        <CarSVG />
       </motion.div>
     </div>
   );
 }
 
-function DogSVG({
-  pupilDx,
-  pupilDy,
+function ChildSVG({
+  eyeDx,
+  eyeDy,
 }: {
-  pupilDx: MotionValue<number>;
-  pupilDy: MotionValue<number>;
+  eyeDx: MotionValue<number>;
+  eyeDy: MotionValue<number>;
 }) {
   return (
     <svg
-      width="500"
-      height="460"
-      viewBox="0 0 280 280"
+      width="380"
+      height="360"
+      viewBox="0 0 220 220"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      style={{ filter: "drop-shadow(0 -16px 48px var(--pine))" }}
+      style={{ filter: "drop-shadow(0 -12px 40px rgba(252,128,25,0.30))" }}
     >
-      {/* Left ear */}
-      <ellipse
-        cx="78"
-        cy="135"
-        rx="38"
-        ry="55"
-        fill="var(--pine)"
-        transform="rotate(-18 78 135)"
-        opacity="0.9"
-      />
-      {/* Right ear */}
-      <ellipse
-        cx="202"
-        cy="135"
-        rx="38"
-        ry="55"
-        fill="var(--pine)"
-        transform="rotate(18 202 135)"
-        opacity="0.9"
-      />
+      {/* Hair */}
+      <ellipse cx="110" cy="72" rx="58" ry="38" fill="var(--ink)" opacity="0.85" />
+      <ellipse cx="110" cy="58" rx="42" ry="26" fill="var(--ink)" opacity="0.9" />
+      {/* Fringe */}
+      <path d="M68 72 Q90 48 110 54 Q130 48 152 72" fill="var(--ink)" opacity="0.85" />
 
       {/* Head */}
-      <ellipse cx="140" cy="168" rx="102" ry="92" fill="var(--sage)" opacity="0.55" />
+      <ellipse cx="110" cy="106" rx="54" ry="52" fill="#FDDCB5" />
 
-      {/* Snout / muzzle */}
-      <ellipse cx="140" cy="215" rx="52" ry="36" fill="var(--paper-dim)" opacity="0.7" />
+      {/* Ears */}
+      <ellipse cx="58"  cy="104" rx="11" ry="13" fill="#FDDCB5" />
+      <ellipse cx="162" cy="104" rx="11" ry="13" fill="#FDDCB5" />
+
+      {/* Eye whites */}
+      <ellipse cx="90"  cy="100" rx="16" ry="17" fill="white" opacity="0.95" />
+      <ellipse cx="130" cy="100" rx="16" ry="17" fill="white" opacity="0.95" />
+
+      {/* Pupils — follow mouse */}
+      <motion.g style={{ x: eyeDx, y: eyeDy }}>
+        <circle cx="90"  cy="100" r="9"  fill="var(--ink)" opacity="0.88" />
+        <circle cx="130" cy="100" r="9"  fill="var(--ink)" opacity="0.88" />
+        <circle cx="93"  cy="97"  r="3"  fill="white" opacity="0.55" />
+        <circle cx="133" cy="97"  r="3"  fill="white" opacity="0.55" />
+      </motion.g>
+
+      {/* Cheeks */}
+      <ellipse cx="76"  cy="114" rx="10" ry="6" fill="rgba(252,128,25,0.25)" />
+      <ellipse cx="144" cy="114" rx="10" ry="6" fill="rgba(252,128,25,0.25)" />
 
       {/* Nose */}
-      <ellipse cx="140" cy="205" rx="17" ry="11" fill="var(--ink)" opacity="0.8" />
-      {/* Nose highlight */}
-      <ellipse cx="135" cy="201" rx="5" ry="3" fill="white" opacity="0.35" />
+      <ellipse cx="110" cy="117" rx="7" ry="5" fill="rgba(0,0,0,0.12)" />
 
-      {/* Mouth left */}
-      <path
-        d="M 127 220 Q 120 230 113 225"
-        stroke="var(--ink)"
-        strokeWidth="3"
-        strokeLinecap="round"
-        fill="none"
-        opacity="0.5"
-      />
-      {/* Mouth right */}
-      <path
-        d="M 153 220 Q 160 230 167 225"
-        stroke="var(--ink)"
-        strokeWidth="3"
-        strokeLinecap="round"
-        fill="none"
-        opacity="0.5"
-      />
+      {/* Smile */}
+      <path d="M92 130 Q110 148 128 130" stroke="var(--ink)" strokeWidth="3.5" strokeLinecap="round" fill="none" opacity="0.55" />
 
-      {/* Left eye socket */}
-      <ellipse cx="107" cy="163" rx="24" ry="26" fill="white" opacity="0.9" />
-      {/* Right eye socket */}
-      <ellipse cx="173" cy="163" rx="24" ry="26" fill="white" opacity="0.9" />
-
-      {/* Left pupil — animated */}
-      <motion.g style={{ x: pupilDx, y: pupilDy }}>
-        <circle cx="107" cy="163" r="13" fill="var(--ink)" opacity="0.85" />
-        <circle cx="111" cy="158" r="4" fill="white" opacity="0.55" />
-        <circle cx="102" cy="167" r="2" fill="white" opacity="0.25" />
-      </motion.g>
-
-      {/* Right pupil — animated */}
-      <motion.g style={{ x: pupilDx, y: pupilDy }}>
-        <circle cx="173" cy="163" r="13" fill="var(--ink)" opacity="0.85" />
-        <circle cx="177" cy="158" r="4" fill="white" opacity="0.55" />
-        <circle cx="168" cy="167" r="2" fill="white" opacity="0.25" />
-      </motion.g>
-
-      {/* Left eyebrow */}
-      <path
-        d="M 88 138 Q 107 128 126 136"
-        stroke="var(--ink)"
-        strokeWidth="3.5"
-        strokeLinecap="round"
-        fill="none"
-        opacity="0.4"
-      />
-      {/* Right eyebrow */}
-      <path
-        d="M 154 136 Q 173 128 192 138"
-        stroke="var(--ink)"
-        strokeWidth="3.5"
-        strokeLinecap="round"
-        fill="none"
-        opacity="0.4"
-      />
-
-      {/* Collar */}
-      <rect x="90" y="248" width="100" height="14" rx="7" fill="var(--clay)" opacity="0.6" />
-      {/* Collar tag */}
-      <circle cx="140" cy="262" r="8" fill="var(--clay-soft)" opacity="0.7" />
+      {/* Neck & shoulders */}
+      <rect x="94" y="152" width="32" height="24" rx="8" fill="#FDDCB5" />
+      <rect x="50" y="170" width="120" height="50" rx="20" fill="var(--pine)" opacity="0.90" />
+      {/* Shirt collar accent */}
+      <path d="M82 172 Q110 184 138 172" stroke="white" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity="0.6" />
     </svg>
   );
 }
 
-function CatSVG({
-  pupilDx,
-  pupilDy,
-}: {
-  pupilDx: MotionValue<number>;
-  pupilDy: MotionValue<number>;
-}) {
+function CarSVG() {
   return (
     <svg
-      width="500"
-      height="460"
-      viewBox="0 0 280 280"
+      width="220"
+      height="120"
+      viewBox="0 0 220 100"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      style={{ filter: "drop-shadow(0 -16px 48px rgba(16,185,129,0.25))" }}
+      style={{ filter: "drop-shadow(0 -6px 24px rgba(252,128,25,0.22))" }}
     >
-      <ellipse cx="140" cy="168" rx="92" ry="92" fill="var(--sage)" opacity="0.65" />
-      <path d="M 70 108 Q 86 50 126 74" fill="var(--pine)" opacity="0.85" />
-      <path d="M 210 108 Q 194 50 154 74" fill="var(--pine)" opacity="0.85" />
-      <ellipse cx="140" cy="210" rx="36" ry="32" fill="var(--paper-dim)" opacity="0.75" />
-      <ellipse cx="140" cy="198" rx="12" ry="10" fill="var(--ink)" opacity="0.85" />
-      <path d="M131 205 Q140 214 149 205" stroke="var(--ink)" strokeWidth="3" strokeLinecap="round" fill="none" opacity="0.75" />
-      <motion.g style={{ x: pupilDx, y: pupilDy }}>
-        <ellipse cx="106" cy="156" rx="14" ry="18" fill="white" opacity="0.95" />
-        <ellipse cx="106" cy="156" rx="7" ry="10" fill="var(--ink)" />
-        <circle cx="108" cy="152" r="3" fill="white" opacity="0.45" />
-      </motion.g>
-      <motion.g style={{ x: pupilDx, y: pupilDy }}>
-        <ellipse cx="174" cy="156" rx="14" ry="18" fill="white" opacity="0.95" />
-        <ellipse cx="174" cy="156" rx="7" ry="10" fill="var(--ink)" />
-        <circle cx="176" cy="152" r="3" fill="white" opacity="0.45" />
-      </motion.g>
-      <path d="M 90 170 Q 120 164 150 170" stroke="var(--ink)" strokeWidth="3" strokeLinecap="round" fill="none" opacity="0.4" />
-      <path d="M 130 168 Q 140 180 150 168" stroke="var(--ink)" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity="0.5" />
-      <path d="M 85 186 L 110 188" stroke="var(--ink)" strokeWidth="2" strokeLinecap="round" opacity="0.4" />
-      <path d="M 170 188 L 195 186" stroke="var(--ink)" strokeWidth="2" strokeLinecap="round" opacity="0.4" />
-      <path d="M 100 176 L 120 184" stroke="var(--ink)" strokeWidth="2" strokeLinecap="round" opacity="0.4" />
-      <path d="M 160 184 L 180 176" stroke="var(--ink)" strokeWidth="2" strokeLinecap="round" opacity="0.4" />
+      {/* Body */}
+      <rect x="10" y="44" width="200" height="44" rx="14" fill="var(--pine)" />
+      {/* Cabin */}
+      <path d="M44 44L66 16H152L176 44Z" fill="var(--pine-bright)" opacity="0.90" />
+      {/* Windows */}
+      <path d="M70 40L82 20H110V40Z" fill="white" opacity="0.65" />
+      <path d="M114 20H140L152 40H114Z" fill="white" opacity="0.65" />
+      {/* Wheels */}
+      <circle cx="54"  cy="88" r="18" fill="var(--ink)" opacity="0.85" />
+      <circle cx="166" cy="88" r="18" fill="var(--ink)" opacity="0.85" />
+      <circle cx="54"  cy="88" r="8"  fill="#E5E7EB" />
+      <circle cx="166" cy="88" r="8"  fill="#E5E7EB" />
+      {/* Headlight */}
+      <ellipse cx="204" cy="60" rx="7" ry="5" fill="#FDE68A" opacity="0.9" />
+      {/* Grill */}
+      <rect x="196" y="64" width="14" height="6" rx="3" fill="var(--ink)" opacity="0.40" />
+      {/* Stripe */}
+      <rect x="10"  y="64" width="196" height="4" rx="2" fill="white" opacity="0.15" />
     </svg>
   );
 }

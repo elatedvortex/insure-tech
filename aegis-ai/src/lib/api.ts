@@ -1,5 +1,5 @@
 /**
- * Aegis API client
+ * BestPolicy API client
  * ------------------------------------------------------------------
  * • Reads access/refresh tokens from localStorage
  * • Automatically attaches Bearer header on every request

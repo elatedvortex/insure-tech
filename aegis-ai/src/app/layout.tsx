@@ -10,8 +10,8 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-display" });
 
 export const metadata: Metadata = {
-  title: "Aegis — Insurance that thinks before you do",
-  description: "Your AI protection advisor. Conversation, not paperwork.",
+  title: "BestPolicy — Health, Motor & Life Insurance",
+  description: "Find the best Health, Motor and Life insurance plans instantly. AI-powered, no paperwork.",
 };
 
 export default function RootLayout({

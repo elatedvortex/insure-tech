@@ -7,13 +7,12 @@ import { useRouter } from "next/navigation";
 import { Presence } from "./Presence";
 
 const PROMPTS = [
-  "I bought my first car.",
-  "I am getting married.",
   "I need health insurance.",
-  "I lost my phone.",
-  "I am travelling next week.",
-  "My father needs medical coverage.",
-  "I started a business.",
+  "I bought a car.",
+  "I want life insurance.",
+  "My parents need a health plan.",
+  "Compare motor insurance plans.",
+  "What's the best term life cover?",
 ];
 
 const PLACEHOLDERS = [
@@ -86,7 +85,7 @@ export function ConversationalHero() {
       >
         <Sparkles className="w-3.5 h-3.5 text-pine" />
         <span className="font-mono text-[11px] tracking-widest uppercase text-pine font-medium">
-          AI Protection Advisor · Aegis
+          AI Insurance Advisor · BestPolicy
         </span>
         <span className="w-1.5 h-1.5 rounded-full bg-pine animate-breathe" />
       </motion.div>
@@ -98,12 +97,12 @@ export function ConversationalHero() {
         className="font-display text-[clamp(2.6rem,7vw,5.5rem)] font-semibold tracking-tight text-center leading-[1.04] max-w-4xl"
       >
         <span className="bg-clip-text text-transparent bg-linear-to-br from-ink via-ink to-ink-soft">
-          Insurance that thinks
+          Insurance that works
         </span>
         <br />
         <span className="relative inline-block">
-          <span className="bg-clip-text text-transparent bg-linear-to-r from-pine via-pine-bright to-pine">
-            before you do.
+          <span className="bg-clip-text text-transparent bg-linear-to-r from-pine-deep via-pine to-pine-bright">
+            for you.
           </span>
           <motion.span
             initial={reduced ? false : { scaleX: 0 }}
@@ -132,9 +131,9 @@ export function ConversationalHero() {
         <button
           onClick={() => router.push("/advisor")}
           className="btn-primary text-base px-6 py-3"
-          aria-label="Talk to Aegis"
+          aria-label="Talk to BestPolicy"
         >
-          Talk to Aegis — Try it now
+          Find my best plan — Try it now
         </button>
 
         <button
@@ -265,9 +264,9 @@ export function ConversationalHero() {
         className="mt-14 flex items-center gap-8 sm:gap-12"
       >
         {[
-          { label: "Policies analysed", value: 12000, suffix: "+" },
-          { label: "Average savings", value: 28, suffix: "%" },
-          { label: "Claims supported", value: 3400, suffix: "+" },
+          { label: "Plans analysed",  value: 25000, suffix: "+" },
+          { label: "Average savings",  value: 35,    suffix: "%" },
+          { label: "Claims supported", value: 8000,  suffix: "+" },
         ].map(({ label, value, suffix }) => (
           <div key={label} className="flex flex-col items-center gap-1">
             <CountUp end={value} suffix={suffix} />

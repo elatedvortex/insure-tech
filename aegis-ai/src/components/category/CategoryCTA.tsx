@@ -23,13 +23,13 @@ export function CategoryCTA({ label, prompt }: { label: string; prompt: string }
           Ready to talk {label.toLowerCase()} coverage?
         </h2>
         <p className="text-paper/70 text-sm mt-3 max-w-sm mx-auto leading-relaxed">
-          No forms — just tell Aegis your situation and get a real recommendation in minutes.
+          No forms — just tell BestPolicy your situation and get a real recommendation in minutes.
         </p>
         <button
           onClick={() => router.push(`/advisor?q=${encodeURIComponent(prompt)}`)}
           className="mt-8 px-7 py-3.5 rounded-full bg-paper text-pine-deep font-medium hover:bg-paper-dim transition-colors"
         >
-          Talk to Aegis
+          Talk to BestPolicy
         </button>
       </motion.div>
     </section>

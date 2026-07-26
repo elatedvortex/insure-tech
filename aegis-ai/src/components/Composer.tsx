@@ -84,7 +84,7 @@ export function Composer({
               submit();
             }
           }}
-          placeholder="Message Aegis..."
+          placeholder="Message BestPolicy..."
           className="flex-1 resize-none bg-transparent py-2 text-sm sm:text-[15px] placeholder:text-sage/70 focus:outline-none max-h-32 disabled:opacity-50"
         />
         <button
@@ -106,7 +106,7 @@ export function Composer({
         </button>
       </div>
       <p className="text-center text-[11px] text-sage mt-2 font-mono">
-        Aegis can make mistakes. Recommendations are guidance, not a binding quote.
+        BestPolicy can make mistakes. Recommendations are guidance, not a binding quote.
       </p>
     </div>
   );

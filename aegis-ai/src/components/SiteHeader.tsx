@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 
 const navItems = [
-  { href: "/advisor", label: "Talk to Aegis" },
+  { href: "/advisor", label: "Talk to BestPolicy" },
   { href: "/dashboard", label: "Workspace" },
 ];
 
@@ -79,7 +79,7 @@ export function SiteHeader({ showLogin = false }: { showLogin?: boolean }) {
           <ShieldCheck className="w-4.5 h-4.5 text-paper" strokeWidth={2.5} />
         </motion.div>
         <span className="font-display font-bold text-[17px] tracking-tight text-ink group-hover:text-pine transition-colors">
-          Aegis
+          BestPolicy
         </span>
       </Link>
 

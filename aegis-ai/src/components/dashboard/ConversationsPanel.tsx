@@ -44,7 +44,7 @@ export function ConversationsPanel({
         <p className="text-xs text-ink-soft">
           No conversations yet.{" "}
           <Link href="/advisor" className="text-pine">
-            Start talking to Aegis
+            Start talking to BestPolicy
           </Link>
         </p>
       ) : (

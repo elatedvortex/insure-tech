@@ -91,7 +91,7 @@ export function ScorePanel({
             <p className="text-xs text-ink-soft mt-4">
               No policies yet.{" "}
               <Link href="/advisor?q=What should I insure first?" className="text-pine">
-                Ask Aegis what to cover first
+                Ask BestPolicy what to cover first
               </Link>
             </p>
           )}
