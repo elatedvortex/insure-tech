@@ -134,8 +134,8 @@ export function AnimatedBackground({
 
 function getScene(theme: BackgroundTheme) {
   const base = {
-    background: "linear-gradient(135deg, rgba(255,255,255,0.25), transparent 60%)",
-    glow: "rgba(16, 185, 129, 0.16)",
+    background: "linear-gradient(135deg, rgba(255,248,240,0.35), transparent 60%)",
+    glow: "rgba(234, 88, 12, 0.16)",
     opacity: 0.8,
     orbs: [] as Array<{ size: number; left: string; top: string; color: string; opacity: number; driftX: number; driftY: number; duration: number }>,
     lines: [] as Array<{ left: string; top: string; width: string; height: string; color: string; opacity: number; rotate: string; driftX: number; driftY: number; duration: number }>,
@@ -147,15 +147,15 @@ function getScene(theme: BackgroundTheme) {
       return {
         ...base,
         name: "pet",
-        background: "linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(250,250,250,0.2) 45%, rgba(16, 185, 129, 0.1))",
-        glow: "rgba(99, 102, 241, 0.18)",
+        background: "linear-gradient(135deg, rgba(251, 146, 60, 0.14), rgba(255,248,240,0.2) 45%, rgba(234, 88, 12, 0.10))",
+        glow: "rgba(251, 146, 60, 0.20)",
         orbs: [
-          { size: 220, left: "14%", top: "14%", color: "rgba(99, 102, 241, 0.24)", opacity: 0.7, driftX: 16, driftY: 10, duration: 18 },
-          { size: 300, left: "70%", top: "65%", color: "rgba(16, 185, 129, 0.16)", opacity: 0.8, driftX: -20, driftY: -14, duration: 24 },
+          { size: 220, left: "14%", top: "14%", color: "rgba(251, 146, 60, 0.26)", opacity: 0.7, driftX: 16, driftY: 10, duration: 18 },
+          { size: 300, left: "70%", top: "65%", color: "rgba(234, 88, 12, 0.16)", opacity: 0.8, driftX: -20, driftY: -14, duration: 24 },
         ],
         lines: [
-          { left: "24%", top: "36%", width: "180px", height: "1px", color: "rgba(99,102,241,0.35)", opacity: 0.7, rotate: "rotate(10deg)", driftX: 12, driftY: 8, duration: 16 },
-          { left: "54%", top: "72%", width: "120px", height: "1px", color: "rgba(16,185,129,0.32)", opacity: 0.6, rotate: "rotate(-16deg)", driftX: -8, driftY: 6, duration: 14 },
+          { left: "24%", top: "36%", width: "180px", height: "1px", color: "rgba(251,146,60,0.38)", opacity: 0.7, rotate: "rotate(10deg)", driftX: 12, driftY: 8, duration: 16 },
+          { left: "54%", top: "72%", width: "120px", height: "1px", color: "rgba(234,88,12,0.30)", opacity: 0.6, rotate: "rotate(-16deg)", driftX: -8, driftY: 6, duration: 14 },
         ],
         characters: [
           { kind: "dog", left: "18%", top: "78%", width: 140, opacity: 0.82, driftX: 10, driftY: 6, duration: 14, scale: 0.95 },
@@ -166,15 +166,15 @@ function getScene(theme: BackgroundTheme) {
       return {
         ...base,
         name: "life",
-        background: "linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(255,255,255,0.2) 48%, rgba(99, 102, 241, 0.08))",
-        glow: "rgba(16, 185, 129, 0.16)",
+        background: "linear-gradient(135deg, rgba(234, 88, 12, 0.12), rgba(255,248,240,0.2) 48%, rgba(217, 119, 6, 0.08))",
+        glow: "rgba(234, 88, 12, 0.16)",
         orbs: [
-          { size: 260, left: "12%", top: "16%", color: "rgba(16, 185, 129, 0.2)", opacity: 0.8, driftX: 12, driftY: 8, duration: 20 },
-          { size: 220, left: "72%", top: "58%", color: "rgba(99, 102, 241, 0.16)", opacity: 0.7, driftX: -14, driftY: -10, duration: 18 },
+          { size: 260, left: "12%", top: "16%", color: "rgba(234, 88, 12, 0.20)", opacity: 0.8, driftX: 12, driftY: 8, duration: 20 },
+          { size: 220, left: "72%", top: "58%", color: "rgba(217, 119, 6, 0.16)", opacity: 0.7, driftX: -14, driftY: -10, duration: 18 },
         ],
         lines: [
-          { left: "24%", top: "28%", width: "220px", height: "1px", color: "rgba(16,185,129,0.3)", opacity: 0.7, rotate: "rotate(-8deg)", driftX: 8, driftY: 6, duration: 15 },
-          { left: "54%", top: "72%", width: "170px", height: "1px", color: "rgba(99,102,241,0.26)", opacity: 0.6, rotate: "rotate(14deg)", driftX: -8, driftY: 5, duration: 13 },
+          { left: "24%", top: "28%", width: "220px", height: "1px", color: "rgba(234,88,12,0.30)", opacity: 0.7, rotate: "rotate(-8deg)", driftX: 8, driftY: 6, duration: 15 },
+          { left: "54%", top: "72%", width: "170px", height: "1px", color: "rgba(217,119,6,0.26)", opacity: 0.6, rotate: "rotate(14deg)", driftX: -8, driftY: 5, duration: 13 },
         ],
         characters: [
           { kind: "person", left: "20%", top: "78%", width: 126, opacity: 0.8, driftX: 8, driftY: 5, duration: 14, scale: 0.95 },
@@ -185,15 +185,15 @@ function getScene(theme: BackgroundTheme) {
       return {
         ...base,
         name: "vehicle",
-        background: "linear-gradient(135deg, rgba(113, 113, 122, 0.12), rgba(255,255,255,0.2) 42%, rgba(16, 185, 129, 0.12))",
-        glow: "rgba(113, 113, 122, 0.2)",
+        background: "linear-gradient(135deg, rgba(180, 83, 9, 0.12), rgba(255,248,240,0.2) 42%, rgba(234, 88, 12, 0.12))",
+        glow: "rgba(180, 83, 9, 0.20)",
         orbs: [
-          { size: 240, left: "15%", top: "18%", color: "rgba(113, 113, 122, 0.18)", opacity: 0.8, driftX: 14, driftY: 12, duration: 19 },
-          { size: 280, left: "70%", top: "62%", color: "rgba(16, 185, 129, 0.16)", opacity: 0.7, driftX: -16, driftY: -12, duration: 22 },
+          { size: 240, left: "15%", top: "18%", color: "rgba(180, 83, 9, 0.18)", opacity: 0.8, driftX: 14, driftY: 12, duration: 19 },
+          { size: 280, left: "70%", top: "62%", color: "rgba(234, 88, 12, 0.16)", opacity: 0.7, driftX: -16, driftY: -12, duration: 22 },
         ],
         lines: [
-          { left: "18%", top: "40%", width: "260px", height: "2px", color: "rgba(113,113,122,0.25)", opacity: 0.7, rotate: "rotate(8deg)", driftX: 10, driftY: 6, duration: 16 },
-          { left: "58%", top: "70%", width: "150px", height: "2px", color: "rgba(16,185,129,0.25)", opacity: 0.6, rotate: "rotate(-10deg)", driftX: -6, driftY: 5, duration: 14 },
+          { left: "18%", top: "40%", width: "260px", height: "2px", color: "rgba(180,83,9,0.25)", opacity: 0.7, rotate: "rotate(8deg)", driftX: 10, driftY: 6, duration: 16 },
+          { left: "58%", top: "70%", width: "150px", height: "2px", color: "rgba(234,88,12,0.25)", opacity: 0.6, rotate: "rotate(-10deg)", driftX: -6, driftY: 5, duration: 14 },
         ],
         characters: [
           { kind: "car", left: "18%", top: "76%", width: 170, opacity: 0.8, driftX: 8, driftY: 5, duration: 13, scale: 0.95 },
@@ -204,15 +204,15 @@ function getScene(theme: BackgroundTheme) {
       return {
         ...base,
         name: "health",
-        background: "linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(255,255,255,0.2) 46%, rgba(16, 185, 129, 0.1))",
-        glow: "rgba(99, 102, 241, 0.16)",
+        background: "linear-gradient(135deg, rgba(234, 88, 12, 0.12), rgba(255,248,240,0.2) 46%, rgba(251, 146, 60, 0.10))",
+        glow: "rgba(234, 88, 12, 0.18)",
         orbs: [
-          { size: 240, left: "12%", top: "16%", color: "rgba(99, 102, 241, 0.2)", opacity: 0.75, driftX: 12, driftY: 10, duration: 18 },
-          { size: 260, left: "74%", top: "64%", color: "rgba(16, 185, 129, 0.16)", opacity: 0.75, driftX: -16, driftY: -10, duration: 20 },
+          { size: 240, left: "12%", top: "16%", color: "rgba(234, 88, 12, 0.20)", opacity: 0.75, driftX: 12, driftY: 10, duration: 18 },
+          { size: 260, left: "74%", top: "64%", color: "rgba(251, 146, 60, 0.16)", opacity: 0.75, driftX: -16, driftY: -10, duration: 20 },
         ],
         lines: [
-          { left: "28%", top: "34%", width: "170px", height: "1px", color: "rgba(99,102,241,0.32)", opacity: 0.7, rotate: "rotate(12deg)", driftX: 9, driftY: 6, duration: 14 },
-          { left: "56%", top: "74%", width: "140px", height: "1px", color: "rgba(16,185,129,0.3)", opacity: 0.6, rotate: "rotate(-12deg)", driftX: -7, driftY: 5, duration: 16 },
+          { left: "28%", top: "34%", width: "170px", height: "1px", color: "rgba(234,88,12,0.32)", opacity: 0.7, rotate: "rotate(12deg)", driftX: 9, driftY: 6, duration: 14 },
+          { left: "56%", top: "74%", width: "140px", height: "1px", color: "rgba(251,146,60,0.30)", opacity: 0.6, rotate: "rotate(-12deg)", driftX: -7, driftY: 5, duration: 16 },
         ],
         characters: [
           { kind: "heart", left: "20%", top: "78%", width: 132, opacity: 0.78, driftX: 8, driftY: 5, duration: 13, scale: 0.96 },
@@ -223,15 +223,15 @@ function getScene(theme: BackgroundTheme) {
       return {
         ...base,
         name: "home",
-        background: "linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(255,255,255,0.2) 50%, rgba(113, 113, 122, 0.08))",
-        glow: "rgba(16, 185, 129, 0.18)",
+        background: "linear-gradient(135deg, rgba(234, 88, 12, 0.12), rgba(255,248,240,0.2) 50%, rgba(217, 119, 6, 0.08))",
+        glow: "rgba(234, 88, 12, 0.18)",
         orbs: [
-          { size: 280, left: "12%", top: "16%", color: "rgba(16, 185, 129, 0.18)", opacity: 0.8, driftX: 10, driftY: 8, duration: 17 },
-          { size: 240, left: "72%", top: "62%", color: "rgba(113, 113, 122, 0.16)", opacity: 0.75, driftX: -14, driftY: -10, duration: 20 },
+          { size: 280, left: "12%", top: "16%", color: "rgba(234, 88, 12, 0.18)", opacity: 0.8, driftX: 10, driftY: 8, duration: 17 },
+          { size: 240, left: "72%", top: "62%", color: "rgba(217, 119, 6, 0.16)", opacity: 0.75, driftX: -14, driftY: -10, duration: 20 },
         ],
         lines: [
-          { left: "20%", top: "33%", width: "200px", height: "2px", color: "rgba(16,185,129,0.28)", opacity: 0.7, rotate: "rotate(7deg)", driftX: 8, driftY: 6, duration: 15 },
-          { left: "56%", top: "74%", width: "150px", height: "2px", color: "rgba(113,113,122,0.24)", opacity: 0.6, rotate: "rotate(-10deg)", driftX: -7, driftY: 5, duration: 14 },
+          { left: "20%", top: "33%", width: "200px", height: "2px", color: "rgba(234,88,12,0.28)", opacity: 0.7, rotate: "rotate(7deg)", driftX: 8, driftY: 6, duration: 15 },
+          { left: "56%", top: "74%", width: "150px", height: "2px", color: "rgba(217,119,6,0.24)", opacity: 0.6, rotate: "rotate(-10deg)", driftX: -7, driftY: 5, duration: 14 },
         ],
         characters: [
           { kind: "house", left: "19%", top: "77%", width: 150, opacity: 0.8, driftX: 8, driftY: 5, duration: 12, scale: 0.95 },
@@ -242,15 +242,15 @@ function getScene(theme: BackgroundTheme) {
       return {
         ...base,
         name: "travel",
-        background: "linear-gradient(135deg, rgba(52, 211, 153, 0.12), rgba(255,255,255,0.2) 45%, rgba(99, 102, 241, 0.1))",
-        glow: "rgba(52, 211, 153, 0.16)",
+        background: "linear-gradient(135deg, rgba(251, 146, 60, 0.14), rgba(255,248,240,0.2) 45%, rgba(234, 88, 12, 0.10))",
+        glow: "rgba(251, 146, 60, 0.18)",
         orbs: [
-          { size: 250, left: "14%", top: "15%", color: "rgba(52, 211, 153, 0.2)", opacity: 0.75, driftX: 16, driftY: 8, duration: 18 },
-          { size: 220, left: "70%", top: "62%", color: "rgba(99, 102, 241, 0.16)", opacity: 0.75, driftX: -14, driftY: -10, duration: 20 },
+          { size: 250, left: "14%", top: "15%", color: "rgba(251, 146, 60, 0.22)", opacity: 0.75, driftX: 16, driftY: 8, duration: 18 },
+          { size: 220, left: "70%", top: "62%", color: "rgba(234, 88, 12, 0.16)", opacity: 0.75, driftX: -14, driftY: -10, duration: 20 },
         ],
         lines: [
-          { left: "22%", top: "31%", width: "220px", height: "1px", color: "rgba(52,211,153,0.3)", opacity: 0.7, rotate: "rotate(10deg)", driftX: 10, driftY: 6, duration: 15 },
-          { left: "56%", top: "72%", width: "140px", height: "1px", color: "rgba(99,102,241,0.26)", opacity: 0.6, rotate: "rotate(-12deg)", driftX: -6, driftY: 5, duration: 13 },
+          { left: "22%", top: "31%", width: "220px", height: "1px", color: "rgba(251,146,60,0.32)", opacity: 0.7, rotate: "rotate(10deg)", driftX: 10, driftY: 6, duration: 15 },
+          { left: "56%", top: "72%", width: "140px", height: "1px", color: "rgba(234,88,12,0.26)", opacity: 0.6, rotate: "rotate(-12deg)", driftX: -6, driftY: 5, duration: 13 },
         ],
         characters: [
           { kind: "plane", left: "17%", top: "76%", width: 168, opacity: 0.8, driftX: 9, driftY: 5, duration: 13, scale: 0.95 },
@@ -261,15 +261,15 @@ function getScene(theme: BackgroundTheme) {
       return {
         ...base,
         name: "business",
-        background: "linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(255,255,255,0.2) 48%, rgba(113, 113, 122, 0.08))",
-        glow: "rgba(16, 185, 129, 0.14)",
+        background: "linear-gradient(135deg, rgba(180, 83, 9, 0.12), rgba(255,248,240,0.2) 48%, rgba(217, 119, 6, 0.08))",
+        glow: "rgba(180, 83, 9, 0.16)",
         orbs: [
-          { size: 250, left: "12%", top: "18%", color: "rgba(16, 185, 129, 0.2)", opacity: 0.75, driftX: 10, driftY: 8, duration: 18 },
-          { size: 240, left: "72%", top: "60%", color: "rgba(113, 113, 122, 0.16)", opacity: 0.7, driftX: -12, driftY: -8, duration: 19 },
+          { size: 250, left: "12%", top: "18%", color: "rgba(180, 83, 9, 0.20)", opacity: 0.75, driftX: 10, driftY: 8, duration: 18 },
+          { size: 240, left: "72%", top: "60%", color: "rgba(217, 119, 6, 0.16)", opacity: 0.7, driftX: -12, driftY: -8, duration: 19 },
         ],
         lines: [
-          { left: "22%", top: "35%", width: "220px", height: "2px", color: "rgba(16,185,129,0.26)", opacity: 0.7, rotate: "rotate(6deg)", driftX: 7, driftY: 5, duration: 14 },
-          { left: "56%", top: "74%", width: "170px", height: "2px", color: "rgba(113,113,122,0.24)", opacity: 0.6, rotate: "rotate(-10deg)", driftX: -6, driftY: 4, duration: 13 },
+          { left: "22%", top: "35%", width: "220px", height: "2px", color: "rgba(180,83,9,0.26)", opacity: 0.7, rotate: "rotate(6deg)", driftX: 7, driftY: 5, duration: 14 },
+          { left: "56%", top: "74%", width: "170px", height: "2px", color: "rgba(217,119,6,0.24)", opacity: 0.6, rotate: "rotate(-10deg)", driftX: -6, driftY: 4, duration: 13 },
         ],
         characters: [
           { kind: "briefcase", left: "18%", top: "77%", width: 148, opacity: 0.8, driftX: 7, driftY: 5, duration: 12, scale: 0.95 },
@@ -280,15 +280,15 @@ function getScene(theme: BackgroundTheme) {
       return {
         ...base,
         name: "default",
-        background: "linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(255,255,255,0.25) 55%, rgba(99, 102, 241, 0.08))",
-        glow: "rgba(16, 185, 129, 0.16)",
+        background: "linear-gradient(135deg, rgba(234, 88, 12, 0.10), rgba(255,248,240,0.30) 55%, rgba(217, 119, 6, 0.08))",
+        glow: "rgba(234, 88, 12, 0.16)",
         orbs: [
-          { size: 260, left: "16%", top: "12%", color: "rgba(16, 185, 129, 0.18)", opacity: 0.8, driftX: 18, driftY: 10, duration: 20 },
-          { size: 300, left: "72%", top: "64%", color: "rgba(99, 102, 241, 0.16)", opacity: 0.8, driftX: -20, driftY: -14, duration: 24 },
+          { size: 260, left: "16%", top: "12%", color: "rgba(234, 88, 12, 0.18)", opacity: 0.8, driftX: 18, driftY: 10, duration: 20 },
+          { size: 300, left: "72%", top: "64%", color: "rgba(251, 146, 60, 0.16)", opacity: 0.8, driftX: -20, driftY: -14, duration: 24 },
         ],
         lines: [
-          { left: "24%", top: "34%", width: "180px", height: "1px", color: "rgba(16,185,129,0.24)", opacity: 0.7, rotate: "rotate(8deg)", driftX: 10, driftY: 7, duration: 16 },
-          { left: "56%", top: "70%", width: "140px", height: "1px", color: "rgba(99,102,241,0.24)", opacity: 0.6, rotate: "rotate(-12deg)", driftX: -8, driftY: 6, duration: 14 },
+          { left: "24%", top: "34%", width: "180px", height: "1px", color: "rgba(234,88,12,0.24)", opacity: 0.7, rotate: "rotate(8deg)", driftX: 10, driftY: 7, duration: 16 },
+          { left: "56%", top: "70%", width: "140px", height: "1px", color: "rgba(217,119,6,0.24)", opacity: 0.6, rotate: "rotate(-12deg)", driftX: -8, driftY: 6, duration: 14 },
         ],
         characters: [
           { kind: "spark", left: "20%", top: "74%", width: 112, opacity: 0.72, driftX: 8, driftY: 5, duration: 14, scale: 0.9 },

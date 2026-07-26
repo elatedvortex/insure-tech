@@ -72,7 +72,7 @@ export function ConversationalHero() {
           <div
             className="absolute inset-0 opacity-80"
             style={{
-              background: `radial-gradient(320px circle at ${pointer.x}px ${pointer.y}px, rgba(16, 185, 129, 0.11), transparent 62%)`,
+              background: `radial-gradient(320px circle at ${pointer.x}px ${pointer.y}px, rgba(234, 88, 12, 0.12), transparent 62%)`,
             }}
           />
         ) : null}

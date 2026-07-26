@@ -1,36 +1,48 @@
 @import "tailwindcss";
 
 :root {
-  --paper: #FAFAFA;
-  --paper-dim: #F4F4F5;
-  --ink: #09090B;
-  --ink-soft: #3F3F46;
+  /* Warm ivory background */
+  --paper: #FFFBF5;
+  --paper-dim: #FFF3E0;
+  --ink: #1C0A00;
+  --ink-soft: #5C3A1E;
   --surface: #FFFFFF;
-  --surface-line: #E4E4E7;
-  --pine: #10B981;
-  --pine-deep: #059669;
-  --pine-bright: #34D399;
-  --sage: #71717A;
-  --clay: #6366F1;
-  --clay-soft: #A5B4FC;
+  --surface-line: #FFD9A8;
+
+  /* Primary: Deep warm orange */
+  --pine: #EA580C;
+  --pine-deep: #C2410C;
+  --pine-bright: #FB923C;
+
+  /* Neutral */
+  --sage: #78716C;
+
+  /* Accent: Golden amber */
+  --clay: #D97706;
+  --clay-soft: #FDE68A;
 
   --background: var(--paper);
   --foreground: var(--ink);
 }
 
 .dark {
-  --paper: #030712;
-  --paper-dim: #0B1120;
-  --ink: #F8FAFC;
-  --ink-soft: #94A3B8;
-  --surface: rgba(15, 23, 42, 0.4);
-  --surface-line: rgba(51, 65, 85, 0.5);
-  --pine: #10B981;
-  --pine-deep: #047857;
-  --pine-bright: #34D399;
-  --sage: #64748B;
-  --clay: #818CF8;
-  --clay-soft: #312E81;
+  --paper: #130800;
+  --paper-dim: #1F0E00;
+  --ink: #FFF8F0;
+  --ink-soft: #D6A87A;
+  --surface: rgba(40, 20, 5, 0.45);
+  --surface-line: rgba(180, 100, 40, 0.35);
+
+  /* Primary: vibrant orange in dark */
+  --pine: #FB923C;
+  --pine-deep: #EA580C;
+  --pine-bright: #FDBA74;
+
+  --sage: #A8A29E;
+
+  /* Accent: amber */
+  --clay: #FBBF24;
+  --clay-soft: #92400E;
 
   --background: var(--paper);
   --foreground: var(--ink);
@@ -68,8 +80,9 @@ html {
 body {
   background: var(--background);
   background-image:
-    radial-gradient(circle at top left, rgba(16, 185, 129, 0.08), transparent 26%),
-    linear-gradient(180deg, rgba(255,255,255,0.2), transparent 28%);
+    radial-gradient(circle at top left, rgba(234, 88, 12, 0.10), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(251, 146, 60, 0.07), transparent 32%),
+    linear-gradient(180deg, rgba(255,248,240,0.35), transparent 30%);
   background-attachment: fixed;
   color: var(--foreground);
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
@@ -94,15 +107,15 @@ body {
 }
 
 .premium-surface {
-  background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(250,250,250,0.78));
+  background: linear-gradient(135deg, rgba(255,251,245,0.94), rgba(255,243,224,0.80));
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 24px 70px -26px rgba(2, 6, 23, 0.16);
+  box-shadow: 0 24px 70px -26px rgba(120, 50, 10, 0.14);
 }
 
 .dark .premium-surface {
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.82), rgba(2, 6, 23, 0.76));
-  box-shadow: 0 24px 80px -32px rgba(0, 0, 0, 0.55);
+  background: linear-gradient(135deg, rgba(40, 20, 5, 0.84), rgba(19, 8, 0, 0.78));
+  box-shadow: 0 24px 80px -32px rgba(0, 0, 0, 0.60);
 }
 
 @keyframes breathe {
@@ -145,15 +158,15 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background: linear-gradient(90deg, var(--pine) 0%, var(--pine-bright) 100%);
-  color: var(--paper);
+  background: linear-gradient(90deg, var(--pine-deep) 0%, var(--pine) 50%, var(--pine-bright) 100%);
+  color: #fff;
   padding: 0.65rem 1.1rem;
   border-radius: 9999px;
   font-weight: 600;
-  box-shadow: 0 8px 30px -12px rgba(16,185,129,0.35);
+  box-shadow: 0 8px 30px -12px rgba(234, 88, 12, 0.45);
   transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
 }
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 36px -16px rgba(16,185,129,0.42); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 36px -16px rgba(234, 88, 12, 0.55); }
 .btn-primary:active { transform: translateY(0); }
 .btn-primary:disabled { opacity: 0.5; transform: none; box-shadow: none; }
 
@@ -167,12 +180,12 @@ textarea {
   color: var(--foreground);
   transition: box-shadow 0.12s ease, border-color 0.12s ease;
 }
-.form-input:focus { box-shadow: 0 6px 22px -12px rgba(16,185,129,0.28); border-color: var(--pine); outline: none; }
+.form-input:focus { box-shadow: 0 6px 22px -12px rgba(234, 88, 12, 0.30); border-color: var(--pine); outline: none; }
 
 .card {
   border-radius: 14px;
   background: var(--surface);
-  box-shadow: 0 12px 50px -28px rgba(2,6,23,0.10);
+  box-shadow: 0 12px 50px -28px rgba(120, 50, 10, 0.12);
   padding: 1rem;
 }
 

@@ -114,7 +114,7 @@ export function TrustSection() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-100px" }}
       transition={reduced ? { duration: 0.01 } : { type: "spring", stiffness: 80, damping: 25 }}
-      className="px-6 py-24 bg-pine-deep text-paper rounded-[40px] mx-4 sm:mx-6 my-10"
+      className="px-6 py-24 bg-pine-deep text-paper rounded-[40px] mx-4 sm:mx-6 my-10" style={{ background: 'linear-gradient(135deg, #C2410C 0%, #EA580C 60%, #D97706 100%)' }}
     >
       <div className="max-w-5xl mx-auto">
         <p className="font-mono text-xs tracking-widest uppercase text-paper/60 mb-10">Security & trust</p>
@@ -180,7 +180,7 @@ export function ClosingCTA() {
         Stop filling forms. Start a conversation.
       </h2>
       <motion.button
-        whileHover={reduced ? undefined : { y: -2, scale: 1.01, boxShadow: "0 18px 40px -16px rgba(16, 185, 129, 0.35)" }}
+        whileHover={reduced ? undefined : { y: -2, scale: 1.01, boxShadow: "0 18px 40px -16px rgba(234, 88, 12, 0.45)" }}
         whileTap={{ scale: 0.97 }}
         onClick={() => router.push("/advisor")}
         className="mt-8 px-7 py-3.5 rounded-full bg-pine text-paper font-medium hover:bg-pine-deep transition-colors"
