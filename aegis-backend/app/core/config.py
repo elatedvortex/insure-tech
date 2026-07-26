@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    PROJECT_NAME: str = "Aegis API"
+    PROJECT_NAME: str = "BestPolicy API"
     API_V1_PREFIX: str = "/api/v1"
 
     # SQLite for zero-setup local dev; set DATABASE_URL in .env for Postgres in prod
@@ -18,8 +18,10 @@ class Settings(BaseSettings):
 
     CORS_ORIGINS: list[str] = [
         "http://localhost:3000",
+        "http://localhost:3001",
         "http://127.0.0.1:3000",
-        "https://insure-tech-gas1.vercel.app"
+        "https://insure-tech-gas1.vercel.app",
+        "https://insure-tech-livid.vercel.app",
     ]
 
     ENVIRONMENT: str = "development"
