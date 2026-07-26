@@ -66,7 +66,7 @@ async def seed_demo_data_if_empty(user_id: uuid.UUID, db: AsyncSession) -> None:
         [
             Notification(
                 user_id=user_id,
-                title="Welcome to Aegis",
+                title="Welcome to BestPolicy",
                 body=(
                     "Your AI advisor is ready. Ask about policies, claims, "
                     "or your protection score anytime."

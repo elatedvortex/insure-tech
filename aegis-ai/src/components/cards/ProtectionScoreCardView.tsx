@@ -8,6 +8,13 @@ export function ProtectionScoreCardView({ card }: { card: ProtectionScoreCard })
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (card.overall / 100) * circumference;
 
+  const visibleBreakdown = card.breakdown
+    .map((item) => ({
+      ...item,
+      label: item.label === "Vehicle" ? "Motor" : item.label,
+    }))
+    .filter((item) => ["Health", "Life", "Motor"].includes(item.label));
+
   return (
     <div className="rounded-2xl border border-surface-line bg-surface/60 p-6 max-w-md">
       <div className="flex items-center gap-6">
@@ -34,7 +41,7 @@ export function ProtectionScoreCardView({ card }: { card: ProtectionScoreCard })
           </div>
         </div>
         <div className="flex-1 space-y-2.5">
-          {card.breakdown.map((b) => (
+          {visibleBreakdown.map((b) => (
             <div key={b.label} className="flex items-center gap-2">
               <span className="text-xs text-ink-soft w-14 shrink-0">{b.label}</span>
               <div className="flex-1 h-1.5 rounded-full bg-surface-line overflow-hidden">

@@ -10,13 +10,6 @@ class EmailPasswordRegister(EmailPasswordLogin):
     name: str | None = Field(default=None, max_length=255)
 
 
-class OAuthLogin(BaseModel):
-    provider: str = Field(pattern="^(google|apple)$")
-    id_token: str | None = None
-    email: EmailStr | None = None
-    name: str | None = Field(default=None, max_length=255)
-
-
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 

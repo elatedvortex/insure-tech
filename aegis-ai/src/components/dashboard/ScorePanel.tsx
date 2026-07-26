@@ -20,8 +20,14 @@ export function ScorePanel({
   const radius = 46;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (overall / 100) * circumference;
-  const weakest = breakdown.length
-    ? [...breakdown].sort((a, b) => a.score - b.score)[0]
+  const normalizedBreakdown = breakdown
+    .map((item) => ({
+      ...item,
+      label: item.label === "Vehicle" ? "Motor" : item.label,
+    }))
+    .filter((item) => ["Health", "Life", "Motor"].includes(item.label));
+  const weakest = normalizedBreakdown.length
+    ? [...normalizedBreakdown].sort((a, b) => a.score - b.score)[0]
     : null;
 
   return (
@@ -57,7 +63,7 @@ export function ScorePanel({
               </div>
             </div>
             <div className="flex-1 space-y-2">
-              {breakdown.map((b) => (
+              {normalizedBreakdown.map((b) => (
                 <div key={b.label} className="flex items-center gap-2">
                   <span className="text-[11px] text-ink-soft w-12 shrink-0 truncate">{b.label}</span>
                   <div className="flex-1 h-1 rounded-full bg-surface-line overflow-hidden">

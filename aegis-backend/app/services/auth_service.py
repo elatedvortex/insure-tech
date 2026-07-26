@@ -1,13 +1,9 @@
-"""Auth service for password, OAuth, refresh-token, and reset-password flows."""
+"""Auth service for password, refresh-token, and reset-password flows."""
 
 import uuid
 from datetime import datetime, timedelta, timezone
 
-import httpx
 from fastapi import HTTPException, status
-from google.auth.transport import requests as google_requests
-from google.oauth2 import id_token as google_id_token
-from jose import JWTError, jwt
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -129,114 +125,6 @@ async def login_with_password(email: str, password: str, db: AsyncSession) -> di
     return await _issue_tokens(user, db, "auth.login", {"email": normalized, "method": "password"})
 
 
-def _verify_google_token(raw_id_token: str) -> dict:
-    if not settings.GOOGLE_CLIENT_ID:
-        raise HTTPException(
-            status_code=status.HTTP_501_NOT_IMPLEMENTED,
-            detail="Google sign-in needs GOOGLE_CLIENT_ID configured.",
-        )
-    try:
-        payload = google_id_token.verify_oauth2_token(
-            raw_id_token,
-            google_requests.Request(),
-            settings.GOOGLE_CLIENT_ID,
-        )
-    except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Google token.") from exc
-
-    email = payload.get("email")
-    if not email or not payload.get("email_verified"):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Google email is not verified.")
-    return {
-        "email": email,
-        "subject": payload.get("sub"),
-        "name": payload.get("name"),
-    }
-
-
-async def _verify_apple_token(raw_id_token: str) -> dict:
-    if not settings.APPLE_CLIENT_ID:
-        raise HTTPException(
-            status_code=status.HTTP_501_NOT_IMPLEMENTED,
-            detail="Apple sign-in needs APPLE_CLIENT_ID configured.",
-        )
-
-    try:
-        header = jwt.get_unverified_header(raw_id_token)
-        async with httpx.AsyncClient(timeout=10) as client:
-            response = await client.get("https://appleid.apple.com/auth/keys")
-            response.raise_for_status()
-        keys = response.json()["keys"]
-        key = next((item for item in keys if item.get("kid") == header.get("kid")), None)
-        if key is None:
-            raise JWTError("matching Apple key not found")
-        payload = jwt.decode(
-            raw_id_token,
-            key,
-            algorithms=[header.get("alg", "RS256")],
-            audience=settings.APPLE_CLIENT_ID,
-            issuer="https://appleid.apple.com",
-        )
-    except (httpx.HTTPError, KeyError, JWTError) as exc:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Apple token.") from exc
-
-    email = payload.get("email")
-    if not email:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Apple token did not include an email.")
-    return {
-        "email": email,
-        "subject": payload.get("sub"),
-        "name": None,
-    }
-
-
-async def login_with_oauth(
-    provider: str,
-    db: AsyncSession,
-    id_token: str | None = None,
-    email: str | None = None,
-    name: str | None = None,
-) -> dict:
-    provider = provider.lower()
-    if provider not in {"google", "apple"}:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported OAuth provider.")
-
-    if id_token:
-        profile = _verify_google_token(id_token) if provider == "google" else await _verify_apple_token(id_token)
-    elif settings.ENVIRONMENT == "development" and email:
-        profile = {"email": email, "subject": f"dev-{provider}:{email.lower()}", "name": name}
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"{provider.title()} sign-in requires an identity token.",
-        )
-
-    normalized = profile["email"].lower()
-    user = await _get_user_by_email(normalized, db)
-    is_new_user = user is None
-
-    if is_new_user:
-        user = User(
-            email=normalized,
-            name=profile.get("name") or name,
-            oauth_provider=provider,
-            oauth_subject=profile.get("subject"),
-            is_active=True,
-        )
-        db.add(user)
-    else:
-        user.name = user.name or profile.get("name") or name
-        user.oauth_provider = provider
-        user.oauth_subject = profile.get("subject")
-        user.is_active = True
-
-    await db.flush()
-    return await _issue_tokens(
-        user,
-        db,
-        "auth.signup" if is_new_user else "auth.login",
-        {"email": normalized, "method": provider},
-    )
 
 
 async def request_password_reset(email: str, db: AsyncSession) -> dict:
@@ -259,9 +147,9 @@ async def request_password_reset(email: str, db: AsyncSession) -> dict:
                 reset_url = f"{settings.FRONTEND_URL.rstrip('/')}/login?reset={raw_token}"
                 resend.Emails.send(
                     {
-                        "from": "Aegis Security <onboarding@resend.dev>",
+                        "from": "BestPolicy Security <onboarding@resend.dev>",
                         "to": normalized,
-                        "subject": "Reset your Aegis password",
+                        "subject": "Reset your BestPolicy password",
                         "html": f"<p>Use this secure link to reset your password:</p><p><a href=\"{reset_url}\">Reset password</a></p>",
                     }
                 )

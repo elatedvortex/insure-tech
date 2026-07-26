@@ -102,20 +102,6 @@ async def test_forgot_password_reset_and_login(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_development_oauth_login_seeds_account_data(client: AsyncClient):
-    login = await client.post(
-        "/api/v1/auth/oauth",
-        json={"provider": "google", "email": "google@example.com", "name": "Google User"},
-    )
-    assert login.status_code == 200
-    headers = {"Authorization": f"Bearer {login.json()['access_token']}"}
-
-    policies = await client.get("/api/v1/policies/", headers=headers)
-    assert policies.status_code == 200
-    assert len(policies.json()) >= 2
-
-
-@pytest.mark.asyncio
 async def test_conversation_advisor_with_cards(client: AsyncClient):
     token = await _login(client, email="advisor@example.com")
     headers = {"Authorization": f"Bearer {token}"}

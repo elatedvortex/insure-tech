@@ -89,15 +89,19 @@ def _policy_summary_card(ctx: UserContext) -> dict[str, Any] | None:
 def _protection_card(ctx: UserContext) -> dict[str, Any]:
     if ctx.protection and ctx.protection.breakdown:
         breakdown = [
-            {"label": row.get("label", ""), "score": row.get("score", 0)}
+            {
+                "label": "Motor" if row.get("label") == "Vehicle" else row.get("label", ""),
+                "score": row.get("score", 0),
+            }
             for row in ctx.protection.breakdown
+            if row.get("label") in {"Health", "Life", "Motor", "Vehicle"}
         ]
-        overall = ctx.protection.overall
+        overall = round(sum(item["score"] for item in breakdown) / len(breakdown), 1) if breakdown else 0
     else:
         covered = {p.category for p in ctx.policies if p.status == "Active"}
         breakdown = [
-            {"label": cat, "score": 100 if cat in covered else 0}
-            for cat in ("Health", "Life", "Vehicle", "Home", "Travel")
+            {"label": "Motor" if cat == "Vehicle" else cat, "score": 100 if cat in covered else 0}
+            for cat in ("Health", "Life", "Vehicle")
         ]
         overall = round(sum(b["score"] for b in breakdown) / len(breakdown), 1)
 
@@ -150,7 +154,7 @@ async def get_advisor_response(
     claims_ctx = [{"incident": c.incident_description, "stage": c.stage, "estimate": c.estimate} for c in ctx.claims]
     score_ctx = ctx.protection.overall if ctx.protection else "Unknown"
 
-    system_prompt = f"""You are Aegis, a premium, intelligent AI insurance advisor.
+    system_prompt = f"""You are BestPolicy, a premium, intelligent AI insurance advisor.
 Your goal is to help the user manage their insurance, file claims, and understand their coverage.
 Tone: Professional, concise, empathetic, premium. Do not hallucinate policies they don't have.
 

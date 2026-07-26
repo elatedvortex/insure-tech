@@ -8,12 +8,9 @@ from app.models.policy import Policy
 from app.models.protection_score import ProtectionScore
 
 CATEGORY_WEIGHTS = {
-    "Health": 30,
-    "Life": 25,
-    "Vehicle": 15,
-    "Home": 15,
-    "Travel": 10,
-    "Business": 5,
+    "Health": 40,
+    "Life": 35,
+    "Vehicle": 25,
 }
 
 
@@ -48,7 +45,8 @@ async def recalculate_score(user_id: uuid.UUID, db: AsyncSession) -> ProtectionS
     for cat, weight in CATEGORY_WEIGHTS.items():
         cat_score = 100.0 if cat in covered_categories else 0.0
         weighted_sum += cat_score * weight
-        breakdown.append({"label": cat, "score": cat_score, "weight": weight})
+        label = "Motor" if cat == "Vehicle" else cat
+        breakdown.append({"label": label, "score": cat_score, "weight": weight})
 
     overall = round(weighted_sum / total_weight, 1)
 

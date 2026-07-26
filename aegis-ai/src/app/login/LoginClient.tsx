@@ -1,20 +1,14 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowRight, Eye, EyeOff, KeyRound, Mail } from "lucide-react";
+import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import { AuthHeader } from "@/components/auth/AuthHeader";
-import { OAuthButton } from "@/components/auth/OAuthButton";
-import { Presence } from "@/components/Presence";
 import { useAuth } from "@/lib/auth";
 import { authApi, ApiError, tokens } from "@/lib/api";
 
 type Mode = "signin" | "signup" | "forgot" | "reset";
-
-type GoogleCredentialResponse = {
-  credential?: string;
-};
 
 export default function LoginPage() {
   const router = useRouter();
@@ -30,48 +24,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [loadingProvider, setLoadingProvider] = useState<"google" | "apple" | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [devResetToken, setDevResetToken] = useState<string | null>(resetToken || null);
-  const [googleLoaded, setGoogleLoaded] = useState(false);
-  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-
-  useEffect(() => {
-    if (typeof window === "undefined" || googleLoaded) return;
-
-    const existing = document.querySelector(
-      'script[src="https://accounts.google.com/gsi/client"]',
-    ) as HTMLScriptElement | null;
-
-    if (existing) {
-      if ((window as any).google?.accounts?.id) {
-        setGoogleLoaded(true);
-      } else {
-        existing.addEventListener("load", () => {
-          if ((window as any).google?.accounts?.id) {
-            setGoogleLoaded(true);
-          }
-        });
-      }
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-    script.onload = () => {
-      if ((window as any).google?.accounts?.id) {
-        setGoogleLoaded(true);
-      }
-    };
-    document.body.appendChild(script);
-
-    return () => {
-      script.remove();
-    };
-  }, [googleLoaded]);
 
   const title = useMemo(() => {
     if (mode === "signup") return "Create your BestPolicy account.";
@@ -127,81 +82,6 @@ export default function LoginPage() {
     }
   }
 
-  async function continueWithOAuth(provider: "google" | "apple") {
-    const trimmed = email.trim();
-    setLoadingProvider(provider);
-    setError(null);
-    setMessage(null);
-
-    try {
-      if (provider === "google") {
-        if (!googleClientId) {
-          throw new Error("Google sign-in is not configured. Set NEXT_PUBLIC_GOOGLE_CLIENT_ID.");
-        }
-
-        if (!googleLoaded || !(window as any).google?.accounts?.id) {
-          throw new Error("Google Identity Services is not ready yet.");
-        }
-
-        const credential = await new Promise<string>((resolve, reject) => {
-          let settled = false;
-          const timeout = window.setTimeout(() => {
-            if (!settled) {
-              settled = true;
-              reject(new Error("Google sign-in timed out."));
-            }
-          }, 15000);
-
-          (window as any).google.accounts.id.initialize({
-            client_id: googleClientId,
-            callback: (response: GoogleCredentialResponse) => {
-              if (settled) return;
-              if (response?.credential) {
-                settled = true;
-                window.clearTimeout(timeout);
-                resolve(response.credential);
-              }
-            },
-            ux_mode: "popup",
-          });
-
-          (window as any).google.accounts.id.prompt((notification: any) => {
-            if (settled) return;
-            const blocked =
-              (typeof notification.isNotDisplayed === "function" && notification.isNotDisplayed()) ||
-              (typeof notification.isSkippedMoment === "function" && notification.isSkippedMoment()) ||
-              (typeof notification.isDismissedMoment === "function" && notification.isDismissedMoment());
-
-            if (blocked) {
-              settled = true;
-              window.clearTimeout(timeout);
-              reject(new Error("Google sign-in was cancelled or blocked."));
-            }
-          });
-        });
-
-        const data = await authApi.oauth(provider, {
-          id_token: credential,
-          email: trimmed || undefined,
-          name: name.trim() || undefined,
-        });
-        completeLogin(data);
-      } else {
-        const data = await authApi.oauth(provider, {
-          email: trimmed || `${provider}.account@example.com`,
-          name: name.trim() || undefined,
-        });
-        completeLogin(data);
-      }
-    } catch (e) {
-      handleError(
-        e,
-        `${provider === "google" ? "Google" : "Apple"} sign-in is not available right now.`,
-      );
-    } finally {
-      setLoadingProvider(null);
-    }
-  }
 
   const passwordDisabled = mode === "forgot";
   const primaryText =
@@ -223,41 +103,15 @@ export default function LoginPage() {
           transition={{ duration: 0.5 }}
           className="w-full max-w-sm"
         >
-          <div className="flex justify-center mb-6">
-            <Presence size="lg" active={loading || Boolean(loadingProvider)} />
-          </div>
-          <h1 className="font-display text-2xl sm:text-3xl text-ink text-center leading-tight">
+          <h1 className="font-display text-2xl sm:text-3xl text-ink text-center leading-tight mb-2">
             {title}
           </h1>
           <p className="text-sm text-ink-soft text-center mt-2 mb-8">
-            {mode === "signin" && "Sign in with your password or a connected account."}
-            {mode === "signup" && "Your dashboard, documents, policies, and claims stay tied to this account."}
+            {mode === "signin" && "Sign in to your BestPolicy account."}
+            {mode === "signup" && "Create your account to compare and manage your policies."}
             {mode === "forgot" && "Enter your account email and we will send a reset link."}
             {mode === "reset" && "Use at least 8 characters for your new password."}
           </p>
-
-          {(mode === "signin" || mode === "signup") && (
-            <>
-              <div className="flex flex-col gap-3 mb-6">
-                <OAuthButton
-                  provider="Google"
-                  onClick={() => continueWithOAuth("google")}
-                  loading={loadingProvider === "google"}
-                />
-                <OAuthButton
-                  provider="Apple"
-                  onClick={() => continueWithOAuth("apple")}
-                  loading={loadingProvider === "apple"}
-                />
-              </div>
-
-              <div className="flex items-center gap-3 mb-6">
-                <div className="h-px flex-1 bg-surface-line" />
-                <span className="text-xs text-sage font-mono">or</span>
-                <div className="h-px flex-1 bg-surface-line" />
-              </div>
-            </>
-          )}
 
           <form onSubmit={submit} className="flex flex-col gap-3">
             {mode === "signup" && (

@@ -9,7 +9,6 @@ from app.schemas.auth import (
     EmailPasswordRegister,
     ForgotPasswordRequest,
     MessageResponse,
-    OAuthLogin,
     RefreshRequest,
     ResetPasswordRequest,
     TokenRefreshResponse,
@@ -28,17 +27,6 @@ async def register(body: EmailPasswordRegister, db: AsyncSession = Depends(get_d
 @router.post("/login", response_model=TokenResponse, summary="Log in with email and password")
 async def login(body: EmailPasswordLogin, db: AsyncSession = Depends(get_db)):
     return await auth_service.login_with_password(body.email, body.password, db)
-
-
-@router.post("/oauth", response_model=TokenResponse, summary="Log in with Google or Apple")
-async def oauth_login(body: OAuthLogin, db: AsyncSession = Depends(get_db)):
-    return await auth_service.login_with_oauth(
-        body.provider,
-        db,
-        id_token=body.id_token,
-        email=body.email,
-        name=body.name,
-    )
 
 
 @router.post("/password/forgot", response_model=MessageResponse, summary="Request a password reset")
