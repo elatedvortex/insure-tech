@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { Shield, Car, HeartPulse } from "lucide-react";
+import { Shield, Car, HeartPulse, Lock, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const CATEGORIES = [
