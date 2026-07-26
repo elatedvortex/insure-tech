@@ -30,11 +30,16 @@ app = FastAPI(
 )
 
 # ---------------------------------------------------------------------------
-# CORS
+# CORS — merge the config list with FRONTEND_URL so adding a new domain
+# only requires updating one simple string env var on Render, not a JSON array.
 # ---------------------------------------------------------------------------
+_cors_origins: set[str] = set(settings.CORS_ORIGINS)
+if settings.FRONTEND_URL:
+    _cors_origins.add(settings.FRONTEND_URL.rstrip("/"))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=list(_cors_origins),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
