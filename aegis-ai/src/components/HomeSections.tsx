@@ -49,12 +49,14 @@ export function HowItWorks() {
             viewport={{ once: true, margin: "-100px" }}
             transition={reduced ? { duration: 0.01 } : { type: "spring", stiffness: 100, damping: 20, delay: i * 0.12 }}
             whileHover={reduced ? undefined : { y: -6, scale: 1.01, rotate: -0.6 }}
-            className="group relative overflow-hidden rounded-[28px] border border-surface-line/70 bg-surface/70 p-7 shadow-[0_16px_50px_-24px_rgba(2,6,23,0.18)] backdrop-blur-xl"
+            className="group relative overflow-hidden rounded-[32px] border border-surface-line/70 bg-surface/80 p-7 shadow-[0_20px_60px_-28px_rgba(18,24,38,0.16)] backdrop-blur-xl"
           >
             <div className="absolute inset-0 bg-linear-to-br from-pine/8 via-transparent to-clay/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-            <div className="relative">
-              <div className="w-8 h-8 rounded-full border border-pine/40 flex items-center justify-center mb-4">
-                <div className="w-1.5 h-1.5 rounded-full bg-pine" />
+            <div className="absolute -right-10 -top-10 w-24 h-24 rounded-full bg-pine/12 blur-2xl" />
+            <div className="absolute -left-10 -bottom-10 w-24 h-24 rounded-full bg-ink/5 blur-2xl" />
+            <div className="relative z-10">
+              <div className="w-10 h-10 rounded-2xl bg-pine/10 flex items-center justify-center mb-4 shadow-[0_12px_30px_-20px_rgba(252,132,15,0.45)]">
+                <div className="w-2.5 h-2.5 rounded-full bg-pine" />
               </div>
               <h3 className="font-display text-xl text-ink mb-2">{s.title}</h3>
               <p className="text-ink-soft text-sm leading-relaxed">{s.detail}</p>

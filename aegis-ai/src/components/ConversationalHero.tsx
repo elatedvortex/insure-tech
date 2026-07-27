@@ -64,14 +64,15 @@ export function ConversationalHero() {
       className="relative flex flex-col items-center justify-center px-6 pt-28 pb-24 sm:pt-40 sm:pb-32 overflow-hidden"
     >
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full bg-[radial-gradient(circle,var(--pine)/6%_0%,transparent_65%)]" />
-        <div className="absolute left-[30%] top-[20%] w-[400px] h-[400px] rounded-full bg-[radial-gradient(circle,var(--clay)/4%_0%,transparent_70%)]" />
-        <div className="absolute right-[20%] top-[40%] w-[300px] h-[300px] rounded-full bg-[radial-gradient(circle,var(--pine-bright)/3%_0%,transparent_70%)]" />
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full bg-[radial-gradient(circle,rgba(252,132,15,0.28)_0%,transparent_55%)]" />
+        <div className="absolute left-[18%] top-[14%] w-[500px] h-[500px] rounded-full bg-[radial-gradient(circle,rgba(20,25,39,0.12)_0%,transparent_60%)]" />
+        <div className="absolute right-[12%] top-[32%] w-[360px] h-[360px] rounded-full bg-[radial-gradient(circle,rgba(255,186,71,0.22)_0%,transparent_65%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-[380px] bg-[radial-gradient(ellipse_at_bottom,rgba(237,137,54,0.14),transparent_55%)]" />
         {!reduced ? (
           <div
-            className="absolute inset-0 opacity-80"
+            className="absolute inset-0 opacity-90"
             style={{
-              background: `radial-gradient(320px circle at ${pointer.x}px ${pointer.y}px, rgba(234, 88, 12, 0.12), transparent 62%)`,
+              background: `radial-gradient(320px circle at ${pointer.x}px ${pointer.y}px, rgba(252, 132, 15, 0.16), transparent 58%)`,
             }}
           />
         ) : null}
@@ -156,18 +157,18 @@ export function ConversationalHero() {
         className="w-full max-w-2xl mt-12 relative"
       >
         <div
-          className={`absolute inset-0 rounded-[28px] transition-all duration-500 pointer-events-none ${
+          className={`absolute inset-0 rounded-[30px] transition-all duration-500 pointer-events-none ${
             focused
-              ? "shadow-[0_0_0_3px_var(--pine)/30,0_20px_60px_-10px_var(--pine)/20]"
-              : "shadow-[0_8px_32px_-4px_rgba(0,0,0,0.12)]"
+              ? "shadow-[0_0_0_3px_var(--pine)/30,0_28px_80px_-24px_var(--pine)/20]"
+              : "shadow-[0_18px_60px_-24px_rgba(20,25,39,0.16)]"
           }`}
         />
 
         <div
-          className={`relative rounded-[28px] border-2 transition-all duration-300 p-2 pl-5 ${
+          className={`relative rounded-[30px] border-2 transition-all duration-300 p-2 pl-5 ${
             focused
-              ? "bg-surface border-pine/40 dark:bg-surface"
-              : "bg-surface border-surface-line"
+              ? "bg-white/95 border-pine/40"
+              : "bg-linear-to-br from-white to-[#fff5eb] border-[#f3dccb]"
           }`}
         >
           <div className="flex items-end gap-3">
