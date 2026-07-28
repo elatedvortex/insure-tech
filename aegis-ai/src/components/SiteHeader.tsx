@@ -8,7 +8,11 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 
 const navItems = [
-  { href: "/advisor", label: "Talk to BestPolicy" },
+  { href: "/advisor", label: "Advisor" },
+  { href: "/protection/health", label: "Health" },
+  { href: "/protection/vehicle", label: "Motor" },
+  { href: "/protection/life", label: "Life" },
+  { href: "#how-it-works", label: "How it works" },
   { href: "/dashboard", label: "Workspace" },
 ];
 
@@ -22,7 +26,7 @@ export function SiteHeader({ showLogin = false }: { showLogin?: boolean }) {
   const { user, signOut, loading } = useAuth();
 
   useEffect(() => {
-    const stored = localStorage.getItem("aegis-theme");
+    const stored = localStorage.getItem("bestpolicy-theme") ?? localStorage.getItem("aegis-theme");
     const isDark = stored === "dark";
     if (isDark) {
       setDark(true);
@@ -51,7 +55,7 @@ export function SiteHeader({ showLogin = false }: { showLogin?: boolean }) {
     const next = !dark;
     setDark(next);
     document.documentElement.classList.toggle("dark", next);
-    localStorage.setItem("aegis-theme", next ? "dark" : "light");
+    localStorage.setItem("bestpolicy-theme", next ? "dark" : "light");
   }
 
   return (
@@ -83,15 +87,16 @@ export function SiteHeader({ showLogin = false }: { showLogin?: boolean }) {
         </span>
       </Link>
 
-      <nav className="hidden sm:flex items-center gap-1 px-2 py-1.5 rounded-full border border-surface-line/70 bg-surface/50 backdrop-blur-sm relative">
+      <nav className="hidden sm:flex items-center gap-1 px-4 py-2 rounded-full border border-surface-line/70 bg-surface/75 backdrop-blur-2xl shadow-[0_12px_48px_-30px_rgba(15,23,42,0.16)] relative">
         {navItems.map(({ href, label }) => {
-          const active = pathname === href || (href !== "/" && pathname.startsWith(href));
+          const isAnchor = href.startsWith("#");
+          const active = !isAnchor && (pathname === href || (href !== "/" && pathname.startsWith(href)));
           return (
             <motion.div key={href} className="relative">
               <Link
                 href={href}
-                className={`relative z-10 px-4 py-1.5 rounded-full text-[13px] font-medium transition-all duration-200 ${
-                  active ? "text-ink" : "text-ink-soft hover:text-ink"
+                className={`relative z-10 px-4 py-2 rounded-full text-[13px] font-medium transition-all duration-200 ${
+                  active ? "text-ink bg-paper shadow-[0_4px_12px_-8px_rgba(15,23,42,0.14)]" : "text-ink-soft hover:text-ink hover:bg-white/60"
                 }`}
               >
                 {label}
@@ -99,7 +104,7 @@ export function SiteHeader({ showLogin = false }: { showLogin?: boolean }) {
               {active ? (
                 <motion.span
                   layoutId="nav-pill"
-                  className="absolute inset-0 rounded-full bg-paper shadow-[0_4px_18px_rgba(15,23,42,0.06)]"
+                  className="absolute inset-0 rounded-full bg-paper/90"
                   transition={{ type: "spring", stiffness: 260, damping: 24 }}
                 />
               ) : null}
@@ -113,7 +118,7 @@ export function SiteHeader({ showLogin = false }: { showLogin?: boolean }) {
           onClick={toggle}
           aria-label="Toggle dark mode"
           suppressHydrationWarning
-          className="w-9 h-9 rounded-full flex items-center justify-center text-ink-soft hover:text-pine hover:bg-pine/8 transition-all duration-200"
+          className="w-9 h-9 rounded-full flex items-center justify-center text-ink-soft hover:text-pine hover:bg-pine/10 transition-all duration-200"
         >
           {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
         </button>
@@ -145,9 +150,9 @@ export function SiteHeader({ showLogin = false }: { showLogin?: boolean }) {
           showLogin && (
             <Link
               href="/login"
-              className="hidden sm:inline-flex text-[13px] px-5 py-2 rounded-full bg-ink text-paper font-medium hover:bg-ink-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+              className="hidden sm:inline-flex text-[13px] px-5 py-2 rounded-full bg-ink text-paper font-semibold hover:bg-ink-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
             >
-              Log in
+              Sign in
             </Link>
           )
         )}

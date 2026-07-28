@@ -38,7 +38,7 @@ export function HowItWorks() {
   ];
 
   return (
-    <section className="px-6 py-24 max-w-5xl mx-auto">
+    <section id="how-it-works" className="px-6 py-24 max-w-5xl mx-auto">
       <SectionEyebrow>How it works</SectionEyebrow>
       <div className="mt-10 grid sm:grid-cols-3 gap-8">
         {steps.map((s, i) => (

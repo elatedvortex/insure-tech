@@ -251,26 +251,36 @@ export default function AdvisorClient() {
   }
 
   return (
-    <div className="flex flex-col h-dvh bg-paper">
-      <header className="flex items-center gap-3 px-4 sm:px-6 py-3.5 border-b border-surface-line/60 bg-paper/90 backdrop-blur-xl">
-        <button
-          onClick={() => router.push("/")}
-          aria-label="Back to home"
-          className="w-8 h-8 rounded-full flex items-center justify-center text-ink-soft hover:text-pine transition-colors"
-        >
-          <BackIcon />
-        </button>
-        <Presence size="sm" active={thinking || streaming} />
-        <div>
-          <p className="font-display text-base text-ink leading-none">BestPolicy</p>
-          <p className="text-[11px] text-sage mt-0.5">
-            {thinking ? "Thinking…" : streaming ? "Responding…" : "Your protection advisor"}
-          </p>
+    <div className="flex flex-col min-h-screen bg-background text-ink">
+      <header className="flex flex-col gap-4 px-4 sm:px-6 py-5 border-b border-surface-line/60 bg-surface/95 backdrop-blur-xl shadow-sm">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.push("/")}
+              aria-label="Back to home"
+              className="w-10 h-10 rounded-full flex items-center justify-center text-ink-soft hover:text-pine transition-colors bg-paper/80 border border-surface-line"
+            >
+              <BackIcon />
+            </button>
+            <div>
+              <p className="font-display text-base text-ink leading-none">BestPolicy Advisor</p>
+              <p className="text-[11px] text-sage mt-0.5">
+                {thinking ? "Thinking…" : streaming ? "Responding…" : "Your protection advisor"}
+              </p>
+            </div>
+          </div>
+          <div className="rounded-full border border-surface-line bg-paper/95 px-4 py-2 text-sm text-ink-soft shadow-sm">
+            Health · Motor · Life coverage guidance
+          </div>
         </div>
+        <Presence size="sm" active={thinking || streaming} />
       </header>
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide px-4 sm:px-6 py-6">
         <div className="max-w-3xl mx-auto flex flex-col gap-6">
+          <div className="rounded-[28px] border border-surface-line bg-surface/90 p-5 shadow-[0_20px_60px_-36px_rgba(15,23,42,0.12)]">
+            <p className="text-sm text-ink-soft">Your conversation is private and securely stored.</p>
+          </div>
           {messages.map((m) => (
             <MessageBubble key={m.id} message={m} onQuickReply={(t) => sendMessage(t)} />
           ))}

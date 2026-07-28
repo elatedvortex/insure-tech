@@ -101,19 +101,19 @@ export default function LoginPage() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-sm"
+          className="w-full max-w-sm rounded-[30px] border border-surface-line bg-surface/95 shadow-[0_25px_80px_-45px_rgba(15,23,42,0.25)] p-8"
         >
-          <h1 className="font-display text-2xl sm:text-3xl text-ink text-center leading-tight mb-2">
+          <h1 className="font-display text-3xl sm:text-4xl text-ink text-center leading-tight mb-3">
             {title}
           </h1>
-          <p className="text-sm text-ink-soft text-center mt-2 mb-8">
+          <p className="text-sm text-ink-soft text-center mt-1 mb-8 max-w-[28rem] mx-auto">
             {mode === "signin" && "Sign in to your BestPolicy account."}
             {mode === "signup" && "Create your account to compare and manage your policies."}
             {mode === "forgot" && "Enter your account email and we will send a reset link."}
             {mode === "reset" && "Use at least 8 characters for your new password."}
           </p>
 
-          <form onSubmit={submit} className="flex flex-col gap-3">
+          <form onSubmit={submit} className="flex flex-col gap-4">
             {mode === "signup" && (
               <div>
                 <input

@@ -33,9 +33,9 @@ export function Composer({
   }
 
   return (
-    <div className="border-t border-surface-line/60 bg-paper/90 backdrop-blur-xl px-4 sm:px-6 py-4">
+    <div className="border-t border-surface-line/60 bg-surface/95 backdrop-blur-xl px-4 sm:px-6 py-4 shadow-[0_22px_74px_-42px_rgba(15,23,42,0.16)]">
       {files.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-2 max-w-3xl mx-auto">
+        <div className="flex flex-wrap gap-2 mb-3 max-w-3xl mx-auto">
           {files.map((f, i) => (
             <div
               key={i}
@@ -52,7 +52,7 @@ export function Composer({
           ))}
         </div>
       )}
-      <div className="max-w-3xl mx-auto flex items-end gap-2 rounded-3xl bg-surface/70 border border-surface-line px-3 py-2">
+      <div className="max-w-3xl mx-auto flex items-end gap-3 rounded-[28px] bg-surface/90 border border-surface-line px-3 py-3 shadow-[0_14px_36px_-26px_rgba(15,23,42,0.12)]">
         <input
           ref={fileRef}
           type="file"
@@ -64,7 +64,7 @@ export function Composer({
         <button
           onClick={() => fileRef.current?.click()}
           aria-label="Attach a file"
-          className="w-9 h-9 shrink-0 rounded-full flex items-center justify-center text-sage hover:text-pine transition-colors"
+          className="w-10 h-10 shrink-0 rounded-full border border-surface-line bg-paper text-sage hover:text-pine hover:border-pine transition-all duration-200 shadow-sm flex items-center justify-center"
         >
           <Paperclip className="w-4 h-4" />
         </button>
@@ -85,13 +85,13 @@ export function Composer({
             }
           }}
           placeholder="Message BestPolicy..."
-          className="flex-1 resize-none bg-transparent py-2 text-sm sm:text-[15px] placeholder:text-sage/70 focus:outline-none max-h-32 disabled:opacity-50"
+          className="flex-1 resize-none bg-background/90 border border-surface-line rounded-[22px] px-4 py-3 text-sm sm:text-[15px] placeholder:text-sage/70 focus:outline-none focus:ring-2 focus:ring-pine/20 leading-relaxed max-h-32 disabled:opacity-50"
         />
         <button
           onClick={handleMic}
           aria-label="Speak instead of typing"
-          className={`w-9 h-9 shrink-0 rounded-full flex items-center justify-center transition-colors ${
-            listening ? "bg-clay text-paper" : "text-sage hover:text-pine"
+          className={`w-10 h-10 shrink-0 rounded-full flex items-center justify-center transition-all duration-200 ${
+            listening ? "bg-clay text-paper shadow-[0_0_0_4px_var(--clay)/20]" : "bg-paper text-sage hover:text-pine hover:bg-paper/90"
           }`}
         >
           <Mic className="w-4 h-4" />
@@ -100,7 +100,7 @@ export function Composer({
           onClick={submit}
           disabled={disabled || (!value.trim() && files.length === 0)}
           aria-label="Send message"
-          className="w-9 h-9 shrink-0 rounded-full bg-pine text-paper flex items-center justify-center transition-transform hover:scale-105 active:scale-95 disabled:opacity-30 disabled:hover:scale-100"
+          className="w-10 h-10 shrink-0 rounded-full bg-pine text-paper flex items-center justify-center transition-transform hover:scale-105 active:scale-95 disabled:opacity-30 disabled:hover:scale-100"
         >
           <ArrowUp className="w-4 h-4" />
         </button>
