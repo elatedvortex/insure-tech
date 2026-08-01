@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth";
-import SiteFooter from "@/components/SiteFooter";
 
 const inter  = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-display" });
 
 export const metadata: Metadata = {
-  title: "BestPolicy — Health, Motor & Life Insurance",
-  description: "Find the best Health, Motor and Life insurance plans instantly. AI-powered, no paperwork.",
+  title: "theBestPolicy — India's Smartest Insurance Platform",
+  description:
+    "India's AI-powered insurance decision platform. Compare Health, Life & Motor Insurance with IRDAI-backed data. Choose Smart. Claim Better. Live Protected.",
 };
 
 export default function RootLayout({
@@ -20,7 +20,6 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-paper text-ink font-sans">
         <AuthProvider>
           {children}
-          <SiteFooter />
         </AuthProvider>
       </body>
     </html>

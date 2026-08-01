@@ -8,12 +8,12 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 
 const navItems = [
-  { href: "/advisor", label: "Advisor" },
+  { href: "/#ai-advisor", label: "AI Advisor" },
   { href: "/protection/health", label: "Health" },
   { href: "/protection/vehicle", label: "Motor" },
   { href: "/protection/life", label: "Life" },
-  { href: "#how-it-works", label: "How it works" },
-  { href: "/dashboard", label: "Workspace" },
+  { href: "/#claim-settlement", label: "Claims" },
+  { href: "/#knowledge-centre", label: "Learn" },
 ];
 
 export function SiteHeader({ showLogin = false }: { showLogin?: boolean }) {
@@ -83,7 +83,7 @@ export function SiteHeader({ showLogin = false }: { showLogin?: boolean }) {
           <ShieldCheck className="w-4.5 h-4.5 text-paper" strokeWidth={2.5} />
         </motion.div>
         <span className="font-display font-bold text-[17px] tracking-tight text-ink group-hover:text-pine transition-colors">
-          BestPolicy
+          the<span className="text-pine">Best</span>Policy
         </span>
       </Link>
 
