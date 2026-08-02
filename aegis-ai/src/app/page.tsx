@@ -1,5 +1,4 @@
 import { SiteHeader } from "@/components/SiteHeader";
-import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { HeroSection } from "@/components/HeroSection";
 import { TrustBar } from "@/components/TrustBar";
 import { InsuranceCategories } from "@/components/InsuranceCategories";
@@ -39,21 +38,40 @@ export const metadata = {
 export default function Home() {
   return (
     <>
-      <AnimatedBackground />
       <SiteHeader showLogin />
       <main className="flex-1">
         <HeroSection />
-        <TrustBar />
-        <InsuranceCategories />
-        <AIAdvisorSection />
-        <ClaimSettlementSection />
-        <WhyChooseSection />
-        <CustomerJourneySection />
-        <TestimonialsSection />
-        <AIFeaturesSection />
-        <PodcastSection />
-        <KnowledgeCentreSection />
-        <FinalCTASection />
+        <div className="section-white">
+          <TrustBar />
+          <InsuranceCategories />
+        </div>
+        <div className="section-orange">
+          <AIAdvisorSection />
+        </div>
+        <div className="section-white">
+          <ClaimSettlementSection />
+        </div>
+        <div className="section-orange">
+          <WhyChooseSection />
+        </div>
+        <div className="section-white">
+          <CustomerJourneySection />
+        </div>
+        <div className="section-orange">
+          <TestimonialsSection />
+        </div>
+        <div className="section-white">
+          <AIFeaturesSection />
+        </div>
+        <div className="section-orange">
+          <PodcastSection />
+        </div>
+        <div className="section-white">
+          <KnowledgeCentreSection />
+        </div>
+        <div className="section-orange">
+          <FinalCTASection />
+        </div>
       </main>
     </>
   );

@@ -33,31 +33,31 @@ function AINetworkLines() {
   return (
     <svg
       aria-hidden
-      className="pointer-events-none absolute inset-0 w-full h-full opacity-[0.055]"
+      className="pointer-events-none absolute inset-0 w-full h-full opacity-[0.2]"
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
         <radialGradient id="ng1" cx="50%" cy="40%" r="60%">
-          <stop offset="0%" stopColor="#FC8019" stopOpacity="0.9" />
-          <stop offset="100%" stopColor="#FC8019" stopOpacity="0" />
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.9" />
+          <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
         </radialGradient>
       </defs>
       {/* Node lines */}
-      <line x1="10%" y1="20%" x2="35%" y2="45%" stroke="#FC8019" strokeWidth="1" />
-      <line x1="35%" y1="45%" x2="60%" y2="30%" stroke="#FC8019" strokeWidth="1" />
-      <line x1="60%" y1="30%" x2="85%" y2="55%" stroke="#FC8019" strokeWidth="1" />
-      <line x1="35%" y1="45%" x2="55%" y2="70%" stroke="#FC8019" strokeWidth="1" />
-      <line x1="55%" y1="70%" x2="80%" y2="80%" stroke="#FC8019" strokeWidth="1" />
-      <line x1="20%" y1="65%" x2="55%" y2="70%" stroke="#FC8019" strokeWidth="0.8" />
-      <line x1="60%" y1="30%" x2="70%" y2="10%" stroke="#FC8019" strokeWidth="0.8" />
-      <line x1="10%" y1="20%" x2="20%" y2="65%" stroke="#FC8019" strokeWidth="0.6" />
+      <line x1="10%" y1="20%" x2="35%" y2="45%" stroke="#FFFFFF" strokeWidth="1" />
+      <line x1="35%" y1="45%" x2="60%" y2="30%" stroke="#FFFFFF" strokeWidth="1" />
+      <line x1="60%" y1="30%" x2="85%" y2="55%" stroke="#FFFFFF" strokeWidth="1" />
+      <line x1="35%" y1="45%" x2="55%" y2="70%" stroke="#FFFFFF" strokeWidth="1" />
+      <line x1="55%" y1="70%" x2="80%" y2="80%" stroke="#FFFFFF" strokeWidth="1" />
+      <line x1="20%" y1="65%" x2="55%" y2="70%" stroke="#FFFFFF" strokeWidth="0.8" />
+      <line x1="60%" y1="30%" x2="70%" y2="10%" stroke="#FFFFFF" strokeWidth="0.8" />
+      <line x1="10%" y1="20%" x2="20%" y2="65%" stroke="#FFFFFF" strokeWidth="0.6" />
       {/* Nodes */}
       {[
         ["10%", "20%"], ["35%", "45%"], ["60%", "30%"],
         ["85%", "55%"], ["55%", "70%"], ["80%", "80%"],
         ["20%", "65%"], ["70%", "10%"],
       ].map(([cx, cy], i) => (
-        <circle key={i} cx={cx} cy={cy} r="3.5" fill="#FC8019" opacity="0.8" />
+        <circle key={i} cx={cx} cy={cy} r="3.5" fill="#FFFFFF" opacity="0.8" />
       ))}
     </svg>
   );
@@ -126,22 +126,10 @@ export function HeroSection() {
       id="hero"
       onMouseMove={reduced ? undefined : handlePointerMove}
       onMouseLeave={() => setPointer({ x: 0, y: 0 })}
-      className="relative flex flex-col items-center justify-center px-6 pt-24 pb-20 sm:pt-36 sm:pb-28 overflow-hidden min-h-[92vh]"
+      className="section-orange relative flex flex-col items-center justify-center px-6 pt-24 pb-20 sm:pt-36 sm:pb-28 overflow-hidden min-h-[92vh]"
     >
       {/* Background layers */}
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] rounded-full bg-[radial-gradient(circle,rgba(252,128,25,0.22)_0%,transparent_55%)]" />
-        <div className="absolute left-[10%] top-[8%] w-[500px] h-[500px] rounded-full bg-[radial-gradient(circle,rgba(20,25,39,0.08)_0%,transparent_60%)]" />
-        <div className="absolute right-[8%] top-[30%] w-[380px] h-[380px] rounded-full bg-[radial-gradient(circle,rgba(255,186,71,0.20)_0%,transparent_65%)]" />
-        <div className="absolute inset-x-0 bottom-0 h-[400px] bg-[radial-gradient(ellipse_at_bottom,rgba(237,137,54,0.12),transparent_55%)]" />
-        {!reduced && (
-          <div
-            className="absolute inset-0 opacity-80 transition-opacity duration-200"
-            style={{
-              background: `radial-gradient(380px circle at ${pointer.x}px ${pointer.y}px, rgba(252,128,25,0.14), transparent 62%)`,
-            }}
-          />
-        )}
         <AINetworkLines />
       </div>
 

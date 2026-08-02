@@ -20,8 +20,7 @@ export function WhyChooseSection() {
   return (
     <section
       id="why-choose"
-      className="px-6 py-20 mx-4 sm:mx-6 rounded-[40px] my-10"
-      style={{ background: "linear-gradient(135deg, #1a0a00 0%, #2d1100 50%, #1a0a00 100%)" }}
+      className="section-orange px-6 py-20 mx-4 sm:mx-6 rounded-[40px] my-10"
     >
       <div className="max-w-7xl mx-auto">
         <motion.div

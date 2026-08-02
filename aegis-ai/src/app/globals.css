@@ -2,26 +2,26 @@
 
 :root {
   --paper: #FFFFFF;
-  --paper-dim: #F8FAFC;
+  --paper-dim: #F6F7F9;
   --ink: #0F172A;
   --ink-soft: #475569;
   --surface: #FFFFFF;
   --surface-line: #E2E8F0;
 
   --pine: #FC8019;
-  --pine-deep: #d65f12;
-  --pine-bright: #ffb256;
+  --pine-deep: #E06010;
+  --pine-bright: #FF9A3C;
 
   --sage: #8d360f;
 
   --clay: #FC8019;
-  --clay-soft: #ffe3c7;
+  --clay-soft: #FFE5CC;
 
   --warning: #FC8019;
   --danger: #EF4444;
   --success: #22C55E;
 
-  --background: #FFFBF7;
+  --background: #FFFFFF;
   --foreground: var(--ink);
 }
 
@@ -34,24 +34,20 @@
   --surface-line: rgba(255, 183, 77, 0.12);
 
   --pine: #FC8019;
-  --pine-deep: #d65f12;
-  --pine-bright: #ffb256;
+  --pine-deep: #E06010;
+  --pine-bright: #FF9A3C;
 
   --sage: #d15a20;
 
   --clay: #FC8019;
   --clay-soft: rgba(252, 128, 25, 0.18);
 
-  --background: #080402;
+  --background: #0F172A;
   --foreground: var(--ink);
 }
 
 .dark body {
   background: var(--background);
-  background-image:
-    radial-gradient(circle at 18% 12%, rgba(249, 115, 22, 0.18), transparent 18%),
-    radial-gradient(circle at 82% 18%, rgba(253, 186, 74, 0.12), transparent 22%),
-    linear-gradient(180deg, rgba(8, 4, 2, 1) 0%, rgba(12, 6, 3, 1) 45%, rgba(8, 4, 2, 1) 100%);
 }
 
 @theme inline {
@@ -84,15 +80,52 @@ html {
 }
 
 body {
-  background: var(--background);
-  background-image:
-    radial-gradient(circle at 20% 12%, rgba(249, 115, 22, 0.10), transparent 18%),
-    radial-gradient(circle at 82% 18%, rgba(251, 146, 60, 0.08), transparent 22%),
-    linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(255,247,234,1) 55%, rgba(255,247,234,1) 100%);
-  background-attachment: fixed;
+  background: #FFFFFF;
   color: var(--foreground);
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   overflow-x: hidden;
+}
+
+/* ── Section colour bands ─────────────────────────────────── */
+/* Solid orange band — white text on orange */
+.section-orange {
+  background: #FC8019;
+  color: #FFFFFF;
+}
+.section-orange .text-ink        { color: #FFFFFF !important; }
+.section-orange .text-ink-soft   { color: rgba(255,255,255,0.80) !important; }
+.section-orange .text-pine       { color: #FFFFFF !important; }
+.section-orange .text-sage       { color: rgba(255,255,255,0.70) !important; }
+.section-orange strong           { color: #FFFFFF; }
+.section-orange .border-surface-line,
+.section-orange .border-surface-line\/60 { border-color: rgba(255,255,255,0.25) !important; }
+.section-orange .bg-surface,
+.section-orange .bg-surface\/90  { background: rgba(255,255,255,0.12) !important; }
+.section-orange .bg-pine\/10,
+.section-orange .bg-pine\/5      { background: rgba(255,255,255,0.18) !important; }
+
+/* Button on orange bg */
+.section-orange .btn-primary {
+  background: #FFFFFF;
+  color: #FC8019;
+  box-shadow: 0 8px 32px -12px rgba(0,0,0,0.25);
+}
+.section-orange .btn-primary:hover {
+  background: #FFF3E8;
+  color: #E06010;
+}
+.section-orange .btn-outline {
+  border-color: rgba(255,255,255,0.6) !important;
+  color: #FFFFFF !important;
+}
+.section-orange .btn-outline:hover {
+  background: rgba(255,255,255,0.15) !important;
+}
+
+/* Solid white band */
+.section-white {
+  background: #FFFFFF;
+  color: var(--ink);
 }
 
 ::selection {
@@ -146,16 +179,16 @@ textarea { transition: height 0.15s ease; }
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background: linear-gradient(135deg, var(--pine), var(--pine-bright));
+  background: #FC8019;
   color: #fff;
   padding: 0.8rem 1.65rem;
   border-radius: 9999px;
   font-weight: 700;
   letter-spacing: 0.01em;
-  box-shadow: 0 18px 48px -26px rgba(252, 128, 25, 0.28);
+  box-shadow: 0 8px 32px -16px rgba(252, 128, 25, 0.45);
   transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
-.btn-primary:hover  { background: linear-gradient(135deg, var(--pine-deep), var(--pine)); transform: translateY(-1px); box-shadow: 0 20px 56px -28px rgba(252, 128, 25, 0.35); }
+.btn-primary:hover  { background: #E06010; transform: translateY(-1px); box-shadow: 0 12px 40px -18px rgba(252, 128, 25, 0.55); }
 .btn-primary:active { transform: translateY(0); }
 .btn-primary:disabled { opacity: 0.45; transform: none; box-shadow: none; cursor: not-allowed; }
 
