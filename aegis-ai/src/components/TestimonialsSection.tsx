@@ -58,7 +58,7 @@ export function TestimonialsSection() {
           <h2 className="font-display text-[clamp(2rem,4vw,3.2rem)] font-bold text-ink leading-tight">
             Customers Who Made
             <br />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-pine-deep via-pine to-pine-bright">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-white/80">
               Smarter Decisions
             </span>
           </h2>

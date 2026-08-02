@@ -159,7 +159,7 @@ export function HeroSection() {
         </span>
         <br />
         <span className="relative inline-block">
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-pine-deep via-pine to-pine-bright">
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-white/80">
             Choose Insurance
           </span>
           <motion.span
